@@ -1,0 +1,16 @@
+env: "${ENV:development}"
+#服务配置
+application:
+  server_port: "${SERVER_PORT:9080}"
+log:
+  enabled: true
+  level: "${LOG_LEVEL:debug}"
+authorization:
+  dsn: "${AUTHORIZATION_DSN:redis://127.0.0.1:6379/0}"
+  signature_key: "${AUTHORIZATION_SIGNATURE_KEY:}"
+  ttl: ${AUTHORIZATION_TTL:7200}
+gateway:
+  data_path: "${GATEWAY_DATA_PATH:./data}"
+  native_api:
+    prefix: "${GATEWAY_NATIVE_API_PREFIX:/_api}"
+    access_token: "${GATEWAY_NATIVE_API_ACCESS_TOKEN:}"
