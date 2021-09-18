@@ -2,7 +2,7 @@ server
 {
     listen          ${CONSOLE_PORT};
     server_name     localhost;
-    set             $wwwroot    "/heron/console";
+    set             $wwwroot    "/min/console";
     index           index.html;
     root            $wwwroot;
     rewrite_log     off;

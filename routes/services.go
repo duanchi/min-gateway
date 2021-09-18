@@ -1,10 +1,10 @@
 package routes
 
 import (
-	"github.com/duanchi/min/abstract"
-	util2 "github.com/duanchi/min/util"
 	"github.com/duanchi/min-gateway/service/storage"
 	"github.com/duanchi/min-gateway/types"
+	"github.com/duanchi/min/abstract"
+	util2 "github.com/duanchi/min/util"
 )
 
 
@@ -24,6 +24,9 @@ type Services struct {
 }
 
 func (this *Services) Init () {
+	if !this.StorageService.Inited {
+		storage.WaitGroup.Wait()
+	}
 	this.Maps = types.ServicesMap{}
 	// this.StorageService.HGetAll(this.StorageKey, &this.Maps)
 	data := this.StorageService.Get(this.KEY)

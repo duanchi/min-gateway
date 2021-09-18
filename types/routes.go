@@ -12,6 +12,7 @@ type Route struct {
 	Service string `json:"service"`
 	Authorize bool `json:"authorize"`
 	AuthorizePrefix string `json:"authorize_prefix"`
+	AuthorizeTypeKey string `json:"authorize_type_key"`
 	CustomToken bool `json:"custom_token"`
 	Rewrite map[string]string `json:"rewrite"`
 	Description string `json:"description"`

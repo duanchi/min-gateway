@@ -1,12 +1,13 @@
 package service
 
 import (
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/duanchi/min-gateway/mapper"
+	"github.com/duanchi/min-gateway/service/storage"
 	"github.com/duanchi/min/abstract"
 	"github.com/duanchi/min/types"
 	"github.com/duanchi/min/util"
-	"github.com/duanchi/min-gateway/mapper"
-	"github.com/duanchi/min-gateway/service/storage"
 	"math"
 	"net/http"
 	"time"
@@ -21,7 +22,7 @@ type TokenService struct {
 	Values *storage.ValuesService `autowired:"true"`
 }
 
-func (this *TokenService) Generate (storeId string, storePrefix string, moreData map[string]interface{}) (accessToken string, expireAt int64, refreshToken string, refreshExpireAt int64, err error) {
+func (this *TokenService) Generate (storeId string, storePrefix string, singleton bool, authorizeType string, moreData map[string]interface{}) (accessToken string, expireAt int64, refreshToken string, refreshExpireAt int64, err error) {
 
 	tokenId := util.GenerateUUID().String()
 	refreshId := util.GenerateUUID().String()
@@ -38,15 +39,31 @@ func (this *TokenService) Generate (storeId string, storePrefix string, moreData
 		refreshToken, refreshExpireAt, err = this.Create(refreshId, tokenId)
 
 		if err == nil {
-			/*heron.Db.Insert(&mapper.SystemTokens{
+			/*min.Db.Insert(&mapper.SystemTokens{
 				Id: tokenId,
 				Expiretime: expireAt,
 				UserId: storeId,
 				RefreshId: refreshId,
 			})*/
+
+			fmt.Println("==================================", singleton)
+
+			if singleton {
+				tokens := map[string]mapper.SystemTokens{}
+
+				this.Values.GetAll(&tokens)
+
+				for key, token := range tokens {
+					if token.UserId == storeId && authorizeType == token.AuthorizeType {
+						this.Values.Remove(key)
+					}
+				}
+			}
+
 			err = this.Values.Set(storePrefix + tokenId, mapper.SystemTokens{
 				Id: tokenId,
 				Expiretime: expireAt,
+				AuthorizeType: authorizeType,
 				UserId: storeId,
 				RefreshId: refreshId,
 				More: moreData,
@@ -115,7 +132,7 @@ func (this *TokenService) Fetch (tokenId string, prefix string) (storeId string,
 
 	/*token := mapper.SystemTokens{Id:tokenId}
 
-	has, err := heron.Db.Get(&token)*/
+	has, err := min.Db.Get(&token)*/
 
 	token := mapper.SystemTokens{}
 
@@ -143,7 +160,7 @@ func (this *TokenService) Refresh (tokenId string, refreshId string, storePrefix
 		RefreshId: refreshId,
 	}
 
-	has, err := heron.Db.Get(&token)*/
+	has, err := min.Db.Get(&token)*/
 
 	token := mapper.SystemTokens{}
 
@@ -164,7 +181,7 @@ func (this *TokenService) Refresh (tokenId string, refreshId string, storePrefix
 		refreshToken, refreshExpireAt, err = this.Create(newRefreshId, tokenId)
 
 		if err == nil {
-			/*_, err = heron.Db.
+			/*_, err = min.Db.
 				Where("id = ?", tokenId).
 				And("refresh_id = ?", refreshId).
 				Cols("expiretime,refresh_id").
@@ -231,7 +248,7 @@ func (this *TokenService) Create (id string, issuer string) (token string, expir
 
 func (this *TokenService) Delete (tokenId string, storePrefix string) bool {
 	/*token := mapper.SystemTokens{Id:tokenId}
-	_, _ = heron.Db.Id(tokenId).Delete(&token)*/
+	_, _ = min.Db.Id(tokenId).Delete(&token)*/
 
 	this.Values.Remove(storePrefix + tokenId)
 

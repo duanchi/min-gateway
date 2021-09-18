@@ -3,9 +3,9 @@ package storage
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/duanchi/min-gateway/types"
 	"github.com/duanchi/min/abstract"
 	"github.com/duanchi/min/util"
-	"github.com/duanchi/min-gateway/types"
 	"io/ioutil"
 	"os"
 )
@@ -25,10 +25,12 @@ type StorageService struct {
 	random string
 	instance *os.File
 	Configuration Configuration
+	Inited bool
 }
 
 func (this *StorageService) Init () {
 	this.random = util.GenerateUUID().String()
+	this.Inited = false
 	this.Instance()
 }
 
@@ -36,7 +38,10 @@ func (this *StorageService) Instance () {
 	if this.instance == nil {
 		defer this.instance.Close()
 		var err error
+		WaitGroup.Add(1)
 		this.instance, err = os.OpenFile(this.DataPath + "/configuration.json", os.O_RDWR, 0755)
+		this.Inited = true
+		WaitGroup.Done()
 		if err != nil {
 			fmt.Printf("Cannot Read Configuration File, Create it!\r\n")
 			this.instance, _ = os.Create(this.DataPath + "/configuration.json")
@@ -44,9 +49,7 @@ func (this *StorageService) Instance () {
 			this.instance.Write(data)
 		} else {
 			valueString, _ := ioutil.ReadAll(this.instance)
-			fmt.Println(string(valueString))
 			json.Unmarshal(valueString, &this.Configuration)
-			fmt.Println(this.Configuration)
 		}
 	}
 	// return this.instance

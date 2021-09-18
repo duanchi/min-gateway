@@ -7,7 +7,7 @@
 如果需要认证和授权, 需要先启动一个redis作为令牌存储
 
 ```shell
-docker run -d --name gateway -p 9080 -p 9800 -e AUTHORIZATION_DSN="redis://127.0.0.1:6379/0" docker.heurd.com/heron-go/gateway
+docker run -d --name gateway -p 9080 -p 9800 -e AUTHORIZATION_DSN="redis://127.0.0.1:6379/0" docker.heurd.com/min-go/gateway
 ```
 
 ## 网关配置
@@ -64,7 +64,7 @@ AUTHORIZATION_TTL = 7200
 >
 > **`X-Gateway-Data`内容长度应不超过512字节**
 
-> 若微服务使用`heron`框架, 可以初始化框架内的 `middleware.GatewayMiddleware ` 中间件从而自动解析`X-Gateway-Data`内容至 `gateway.Data`类型的结构体中, 并通过 `ctx.Get('GATEWAY_DATA')`获取
+> 若微服务使用`min`框架, 可以初始化框架内的 `middleware.GatewayMiddleware ` 中间件从而自动解析`X-Gateway-Data`内容至 `gateway.Data`类型的结构体中, 并通过 `ctx.Get('GATEWAY_DATA')`获取
 
 
 
@@ -102,6 +102,6 @@ AUTHORIZATION_TTL = 7200
 
 刷新网关微服务配置缓存
 
-> 为了保证网关的性能, 网关配置是在网关启动时将配置预加载至内存缓存中, 对网关配置更改时, 特别是直接修改了配置文件`/heron/data/*.json`时, 需要调用上面的api对网关的缓存进行刷新才能够刷新配置
+> 为了保证网关的性能, 网关配置是在网关启动时将配置预加载至内存缓存中, 对网关配置更改时, 特别是直接修改了配置文件`/min/data/*.json`时, 需要调用上面的api对网关的缓存进行刷新才能够刷新配置
 >
 > **使用网关提供的配置管理界面时, 不需要额外调用上述内置API**

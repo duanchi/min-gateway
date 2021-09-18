@@ -167,7 +167,7 @@
                     <b-form-radio-group
                       id="authorize"
                       v-model="createRoute.authorize"
-                      :options="[{value:true, text:'需要'}, {value:false, text:'不需要'}]"
+                      :options="[{value:true, text:'需要'}, {value:false, text:'不需要'}, {value:'authorize', text: '授权路由'}]"
                       buttons
                       button-variant="outline-primary"
                       size="sm"
@@ -176,10 +176,17 @@
                   </b-form-group>
                 </b-col>
               </div>
+              <div v-if="createRoute.authorize === 'authorize'" class="form-group row">
+                <label class="col-sm-2 col-form-label" for="authorize_key">授权类型字段</label>
+                <div class="col-sm-8">
+                  <input type="text" id="authorize_key" class="form-control" v-model="createRoute.authorize_type_key" value="HEADER:X-Authorize-Platform">
+                  <p class="form-control-plaintext">QUERY:{query key}或HEADER:{header key}</p>
+                </div>
+              </div>
               <div class="form-group row">
                 <label class="col-sm-2 col-form-label" for="authorize_prefix">授权因子</label>
                 <div class="col-sm-2">
-                  <input type="text" id="authorize_prefix" class="form-control" placeholder="0000" v-model="createRoute.authorize_prefix">
+                  <input type="text" id="authorize_prefix" class="form-control" placeholder="AUTH" v-model="createRoute.authorize_prefix">
                 </div>
               </div>
               <div class="form-group row">
@@ -237,7 +244,9 @@ export default {
         method: [],
         rewrite: [],
         authorize: false,
-        authorize_prefix: '0000'
+        isAuthRoute: false,
+        authorize_prefix: 'AUTH',
+        authorize_type_key: 'HEADER:X-Authorize-Platform'
       },
       serviceList: [],
       routeList: [],
@@ -325,6 +334,13 @@ export default {
       return serviceList
     },
     async createOrUpdate (callback) {
+      if (this.createRoute.authorize === 'authorize') {
+        this.createRoute.isAuthRoute = true
+        this.createRoute.authorize = false
+      } else {
+        this.authorize_type_key = ''
+      }
+
       if (this.updateId !== '') {
         await routes.update(this.updateId, this.createRoute)
       } else {
@@ -377,6 +393,10 @@ export default {
       if (undefined !== this.routeList[index]) {
         this.createRoute = this.routeList[index]
         this.updateId = this.routeList[index].id
+
+        if (this.createRoute.authorize === false && this.createRoute.authorize_type_key !== '') {
+          this.createRoute.authorize = 'authorize'
+        }
       }
     },
     addInstancePlaceholder () {

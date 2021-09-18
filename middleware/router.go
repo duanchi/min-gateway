@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
+	"fmt"
 	"github.com/duanchi/min-gateway/routes"
 	"github.com/duanchi/min-gateway/util"
 	"github.com/duanchi/min/abstract"
@@ -9,6 +9,7 @@ import (
 	"github.com/duanchi/min/types"
 	util2 "github.com/duanchi/min/util"
 	"github.com/duanchi/min/util/arrays"
+	"github.com/gin-gonic/gin"
 	"math/rand"
 	"regexp"
 	"strings"
@@ -49,6 +50,8 @@ func (this *RouterMiddleware) AfterRoute (ctx *gin.Context) {
 		if url.Fragment != "" {
 			requestUrl += "#" + url.Fragment
 		}
+
+		fmt.Println("=====================================", this.Routes.Maps)
 
 		if len(this.Routes.Maps) > 0 {
 			for _, stack := range this.Routes.Maps {

@@ -4,7 +4,7 @@
     <b-container fluid>
       <b-row>
         <b-col cols="6">
-          2019 &copy; heron.heurd.com
+          2019 &copy; min.heurd.com
         </b-col>
       </b-row>
     </b-container>

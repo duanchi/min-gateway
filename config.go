@@ -1,14 +1,14 @@
 package main
 
 import (
-	_interface "github.com/duanchi/min/interface"
-	"github.com/duanchi/min/types"
 	"github.com/duanchi/min-gateway/dispatcher"
 	"github.com/duanchi/min-gateway/middleware"
 	"github.com/duanchi/min-gateway/native_api"
 	"github.com/duanchi/min-gateway/routes"
 	"github.com/duanchi/min-gateway/service"
 	"github.com/duanchi/min-gateway/service/storage"
+	_interface "github.com/duanchi/min/interface"
+	"github.com/duanchi/min/types"
 )
 
 var Config = struct {
@@ -28,6 +28,7 @@ var Config = struct {
 		Ttl int64 `yaml:"ttl" default:"${AUTHORIZATION_TTL:7200}"`
 		SignatureKey string `yaml:"signature_key" default:"${AUTHORIZATION_SIGNATURE_KEY}"`
 		Dsn string `yaml:"dsn" default:"${AUTHORIZATION_DSN:redis://127.0.0.1:6379/0}"`
+		DefaultSingleton bool `yaml:"default_singleton"`
 	} `yaml:"authorization"`
 
 	Beans struct {

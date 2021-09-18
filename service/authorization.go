@@ -3,11 +3,12 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/duanchi/min-gateway/service/storage"
+	types2 "github.com/duanchi/min-gateway/types"
 	"github.com/duanchi/min/abstract"
 	"github.com/duanchi/min/types"
 	"github.com/duanchi/min/types/gateway"
 	"github.com/gin-gonic/gin"
-	types2 "github.com/duanchi/min-gateway/types"
 	"math"
 	"net/http"
 	"strconv"
@@ -19,8 +20,9 @@ type AuthorizationService struct {
 	abstract.Service
 
 	JwtExpiresIn int64 `value:"${Authorization.Ttl}"`
-
 	TokenService *TokenService `autowired:"true"`
+	StorageService *storage.StorageService `autowired:"true"`
+	ValueService *storage.ValuesService `autowired:"true"`
 }
 
 type authorizationResponse struct {
@@ -39,6 +41,8 @@ func (this *AuthorizationService) Handle(
 	header *http.Header,
 	gatewayData gateway.Data,
 	requestBody []byte,
+	singleton bool,
+	authorizeType string,
 	ctx *gin.Context,
 ) (
 	status int,
@@ -52,11 +56,13 @@ func (this *AuthorizationService) Handle(
 	action := strings.ToUpper(header.Get("X-Gateway-Authorization-Action"))
 	multi := header.Get("X-Gateway-Authorization-Remove-Multi")
 	removePrefix := header.Get("X-Gateway-Authorization-Remove-Prefix")
+
 	responseHeaders = header.Clone()
 	responseHeaders.Del("X-Gateway-Authorization-Data")
 	responseHeaders.Del("X-Gateway-Authorization-More")
 	responseHeaders.Del("X-Gateway-Authorization-ExpiresIn")
 	responseHeaders.Del("X-Gateway-Authorization-Action")
+	responseHeaders.Del("X-Gateway-Authorization-Action-Singleton")
 	responseHeaders.Del("X-Gateway-Authorization-Remove-Multi")
 	responseHeaders.Del("X-Gateway-Authorization-Remove-Prefix")
 	status = http.StatusOK
@@ -68,7 +74,7 @@ func (this *AuthorizationService) Handle(
 
 		route := routeValue.(types2.Route)
 
-		prefix := "0000"
+		prefix := "AUTH"
 		if len(route.AuthorizePrefix) > 0 && len(route.AuthorizePrefix) < 4  {
 			prefix = fmt.Sprintf("%0*s",4, route.AuthorizePrefix)
 		} else if len(route.AuthorizePrefix) >= 4 {
@@ -100,7 +106,8 @@ func (this *AuthorizationService) Handle(
 					"expiresAt": expireAt,
 				}
 			} else {
-				accessToken, expireAt, refreshToken, refreshExpireAt, tokenErr := this.TokenService.Generate(data, prefix + ":", moreData)
+
+				accessToken, expireAt, refreshToken, refreshExpireAt, tokenErr := this.TokenService.Generate(data, prefix + ":", singleton, authorizeType, moreData)
 
 				if tokenErr != nil {
 					panic(types.RuntimeError{
