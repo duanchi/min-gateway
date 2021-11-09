@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/duanchi/min-gateway/mapper"
 	"github.com/duanchi/min-gateway/service/storage"
@@ -16,13 +15,13 @@ import (
 type TokenService struct {
 	abstract.Service
 	JwtSignatureKey string `value:"${Authorization.SignatureKey}"`
-	JwtExpiresIn int64 `value:"${Authorization.Ttl}"`
+	JwtExpiresIn    int64  `value:"${Authorization.Ttl}"`
 
 	// Storage *storage.StorageService `autowired:"true"`
 	Values *storage.ValuesService `autowired:"true"`
 }
 
-func (this *TokenService) Generate (storeId string, storePrefix string, singleton bool, authorizeType string, moreData map[string]interface{}) (accessToken string, expireAt int64, refreshToken string, refreshExpireAt int64, err error) {
+func (this *TokenService) Generate(storeId string, storePrefix string, singleton bool, authorizeType string, moreData map[string]interface{}) (accessToken string, expireAt int64, refreshToken string, refreshExpireAt int64, err error) {
 
 	tokenId := util.GenerateUUID().String()
 	refreshId := util.GenerateUUID().String()
@@ -46,8 +45,6 @@ func (this *TokenService) Generate (storeId string, storePrefix string, singleto
 				RefreshId: refreshId,
 			})*/
 
-			fmt.Println("==================================", singleton)
-
 			if singleton {
 				tokens := map[string]mapper.SystemTokens{}
 
@@ -60,13 +57,13 @@ func (this *TokenService) Generate (storeId string, storePrefix string, singleto
 				}
 			}
 
-			err = this.Values.Set(storePrefix + tokenId, mapper.SystemTokens{
-				Id: tokenId,
-				Expiretime: expireAt,
+			err = this.Values.Set(storePrefix+tokenId, mapper.SystemTokens{
+				Id:            tokenId,
+				Expiretime:    expireAt,
 				AuthorizeType: authorizeType,
-				UserId: storeId,
-				RefreshId: refreshId,
-				More: moreData,
+				UserId:        storeId,
+				RefreshId:     refreshId,
+				More:          moreData,
 			}, jwtExpiresIn)
 			return
 		}
@@ -75,7 +72,7 @@ func (this *TokenService) Generate (storeId string, storePrefix string, singleto
 	return "", 0, "", 0, err
 }
 
-func (this *TokenService) CustomGenerate (storeId string, storePrefix string, moreData map[string]interface{}, expiresIn int64) (expireAt int64, err error) {
+func (this *TokenService) CustomGenerate(storeId string, storePrefix string, moreData map[string]interface{}, expiresIn int64) (expireAt int64, err error) {
 
 	expireAt = int64(math.MaxInt32)
 
@@ -83,16 +80,16 @@ func (this *TokenService) CustomGenerate (storeId string, storePrefix string, mo
 		expireAt = time.Now().Unix() + expiresIn
 	}
 
-	err = this.Values.Set(storePrefix + storeId, mapper.SystemTokens{
-		Id: storeId,
+	err = this.Values.Set(storePrefix+storeId, mapper.SystemTokens{
+		Id:         storeId,
 		Expiretime: expireAt,
-		UserId: storeId,
-		More: moreData,
+		UserId:     storeId,
+		More:       moreData,
 	}, expiresIn)
 	return
 }
 
-func (this *TokenService) Auth (tokenString string, prefix string) bool {
+func (this *TokenService) Auth(tokenString string, prefix string) bool {
 
 	now := time.Now().Unix()
 	claim, err := this.Parse(tokenString)
@@ -106,7 +103,7 @@ func (this *TokenService) Auth (tokenString string, prefix string) bool {
 		return false
 	}
 
-	has, err := this.Values.Get(prefix + ":" + claim.Id, &token)
+	has, err := this.Values.Get(prefix+":"+claim.Id, &token)
 
 	if has && now <= token.Expiretime {
 		return true
@@ -115,9 +112,9 @@ func (this *TokenService) Auth (tokenString string, prefix string) bool {
 	return false
 }
 
-func (this *TokenService) CustomAuth (tokenString string, prefix string) (ok bool, moreData map[string]interface{}, err error) {
+func (this *TokenService) CustomAuth(tokenString string, prefix string) (ok bool, moreData map[string]interface{}, err error) {
 	token := mapper.SystemTokens{}
-	has, err := this.Values.Get(prefix + ":" + tokenString, &token)
+	has, err := this.Values.Get(prefix+":"+tokenString, &token)
 	if err != nil {
 		return false, nil, err
 	}
@@ -128,7 +125,7 @@ func (this *TokenService) CustomAuth (tokenString string, prefix string) (ok boo
 	return false, nil, nil
 }
 
-func (this *TokenService) Fetch (tokenId string, prefix string) (storeId string, moreData map[string]interface{}, err error) {
+func (this *TokenService) Fetch(tokenId string, prefix string) (storeId string, moreData map[string]interface{}, err error) {
 
 	/*token := mapper.SystemTokens{Id:tokenId}
 
@@ -136,7 +133,7 @@ func (this *TokenService) Fetch (tokenId string, prefix string) (storeId string,
 
 	token := mapper.SystemTokens{}
 
-	has, err := this.Values.Get(prefix + ":" + tokenId, &token)
+	has, err := this.Values.Get(prefix+":"+tokenId, &token)
 
 	if has {
 		storeId = token.UserId
@@ -148,7 +145,7 @@ func (this *TokenService) Fetch (tokenId string, prefix string) (storeId string,
 /**
 刷新token过期时间
 */
-func (this *TokenService) Refresh (tokenId string, refreshId string, storePrefix string) (accessToken string, expireAt int64, refreshToken string, refreshExpireAt int64, err error) {
+func (this *TokenService) Refresh(tokenId string, refreshId string, storePrefix string) (accessToken string, expireAt int64, refreshToken string, refreshExpireAt int64, err error) {
 	expireAt = int64(math.MaxInt32)
 
 	if this.JwtExpiresIn != -1 {
@@ -164,14 +161,14 @@ func (this *TokenService) Refresh (tokenId string, refreshId string, storePrefix
 
 	token := mapper.SystemTokens{}
 
-	has, err := this.Values.Get(storePrefix + tokenId, &token)
+	has, err := this.Values.Get(storePrefix+tokenId, &token)
 
 	if !(has && token.RefreshId == refreshId) {
 		has = false
 	}
 
 	if !has {
-		return "",0, "", 0, types.RuntimeError{Message:"未找到可用access token",ErrorCode:http.StatusNotFound}
+		return "", 0, "", 0, types.RuntimeError{Message: "未找到可用access token", ErrorCode: http.StatusNotFound}
 	}
 
 	accessToken, expireAt, err = this.Create(tokenId, "")
@@ -182,13 +179,13 @@ func (this *TokenService) Refresh (tokenId string, refreshId string, storePrefix
 
 		if err == nil {
 			/*_, err = min.Db.
-				Where("id = ?", tokenId).
-				And("refresh_id = ?", refreshId).
-				Cols("expiretime,refresh_id").
-				Update(&mapper.SystemTokens{
-					Expiretime: expireAt,
-					RefreshId: newRefreshId,
-				})*/
+			Where("id = ?", tokenId).
+			And("refresh_id = ?", refreshId).
+			Cols("expiretime,refresh_id").
+			Update(&mapper.SystemTokens{
+				Expiretime: expireAt,
+				RefreshId: newRefreshId,
+			})*/
 
 			jwtExpiresIn := int64(math.MaxInt32)
 
@@ -196,11 +193,11 @@ func (this *TokenService) Refresh (tokenId string, refreshId string, storePrefix
 				jwtExpiresIn = this.JwtExpiresIn
 			}
 
-			err = this.Values.Set(storePrefix + tokenId, mapper.SystemTokens{
-				Id: tokenId,
+			err = this.Values.Set(storePrefix+tokenId, mapper.SystemTokens{
+				Id:         tokenId,
 				Expiretime: expireAt,
-				UserId: token.UserId,
-				RefreshId: newRefreshId,
+				UserId:     token.UserId,
+				RefreshId:  newRefreshId,
 			}, jwtExpiresIn)
 			return
 		}
@@ -211,8 +208,8 @@ func (this *TokenService) Refresh (tokenId string, refreshId string, storePrefix
 
 /**
 解析jwt-token
- */
-func (this *TokenService) Parse (tokenString string) (*jwt.StandardClaims, error) {
+*/
+func (this *TokenService) Parse(tokenString string) (*jwt.StandardClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(this.JwtSignatureKey), nil
 	})
@@ -227,18 +224,17 @@ func (this *TokenService) Parse (tokenString string) (*jwt.StandardClaims, error
 /**
 生成jwt-token
 */
-func (this *TokenService) Create (id string, issuer string) (token string, expireAt int64, err error) {
+func (this *TokenService) Create(id string, issuer string) (token string, expireAt int64, err error) {
 	expireAt = int64(math.MaxInt32)
 
 	if this.JwtExpiresIn != -1 {
 		expireAt = time.Now().Unix() + this.JwtExpiresIn
 	}
 
-
 	generated := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-		Id: id,
+		Id:        id,
 		ExpiresAt: expireAt,
-		Issuer:issuer,
+		Issuer:    issuer,
 	})
 
 	token, err = generated.SignedString([]byte(this.JwtSignatureKey))
@@ -246,7 +242,7 @@ func (this *TokenService) Create (id string, issuer string) (token string, expir
 	return
 }
 
-func (this *TokenService) Delete (tokenId string, storePrefix string) bool {
+func (this *TokenService) Delete(tokenId string, storePrefix string) bool {
 	/*token := mapper.SystemTokens{Id:tokenId}
 	_, _ = min.Db.Id(tokenId).Delete(&token)*/
 

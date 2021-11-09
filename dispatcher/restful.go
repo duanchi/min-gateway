@@ -22,14 +22,14 @@ import (
 type RestfulDispatcher struct {
 	abstract.Router
 
-	Routes *routes.Routes `autowired:"true"`
-	Services *routes.Services `autowired:"true"`
+	Routes               *routes.Routes                `autowired:"true"`
+	Services             *routes.Services              `autowired:"true"`
 	AuthorizationService *service.AuthorizationService `autowired:"true"`
 
 	DefaultSingleton bool `value:"${Authorization.DefaultSingleton}"`
 }
 
-func (this *RestfulDispatcher) Handle (path string, method string, params gin.Params, ctx *gin.Context) {
+func (this *RestfulDispatcher) Handle(path string, method string, params gin.Params, ctx *gin.Context) {
 	if urlValue, has := ctx.Get("url"); has {
 		url := urlValue.(string)
 		rawRequestId, _ := ctx.Get("REQUEST_ID")
@@ -129,7 +129,6 @@ func (this *RestfulDispatcher) Handle (path string, method string, params gin.Pa
 				if route.AuthorizeTypeKey != "" {
 					stack := strings.SplitN(route.AuthorizeTypeKey, ":", 2)
 
-
 					if len(stack) == 2 && stack[0] == "HEADER" {
 						authorizeType = ctx.GetHeader(stack[1])
 					} else if len(stack) == 2 {
@@ -150,7 +149,7 @@ func (this *RestfulDispatcher) Handle (path string, method string, params gin.Pa
 				responseBody, _ = json.Marshal(types.Response{
 					RequestId: requestId,
 					Status:    true,
-					Code: 0,
+					Code:      0,
 					Message:   "Ok",
 					Data:      response,
 				})
@@ -193,7 +192,7 @@ func restfulRequest(
 		responseBody, _ = json.Marshal(types.Response{
 			RequestId: requestId,
 			Status:    false,
-			Code: 100450,
+			Code:      100450,
 			Message:   "Gateway request error",
 			Data:      nil,
 		})
@@ -219,7 +218,7 @@ func restfulRequest(
 		responseBody, _ = json.Marshal(types.Response{
 			RequestId: requestId,
 			Status:    false,
-			Code: 100550,
+			Code:      100550,
 			Message:   "Gateway response error, " + requestErr.(*url.Error).Error(),
 			Data:      nil,
 		})
@@ -240,7 +239,7 @@ func restfulRequest(
 		responseBody, _ = json.Marshal(types.Response{
 			RequestId: requestId,
 			Status:    false,
-			Code: 100551,
+			Code:      100551,
 			Message:   "Gateway response error, nil response",
 			Data:      nil,
 		})

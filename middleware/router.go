@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/duanchi/min-gateway/routes"
 	"github.com/duanchi/min-gateway/util"
 	"github.com/duanchi/min/abstract"
@@ -18,12 +17,12 @@ import (
 type RouterMiddleware struct {
 	abstract.Middleware
 
-	Routes *routes.Routes `autowired:"true"`
-	Services *routes.Services `autowired:"true"`
+	Routes    *routes.Routes       `autowired:"true"`
+	Services  *routes.Services     `autowired:"true"`
 	NativeApi *NativeApiMiddleware `autowired:"true"`
 }
 
-func (this *RouterMiddleware) AfterRoute (ctx *gin.Context) {
+func (this *RouterMiddleware) AfterRoute(ctx *gin.Context) {
 
 	url := ctx.Request.URL
 	method := ctx.Request.Method
@@ -39,7 +38,7 @@ func (this *RouterMiddleware) AfterRoute (ctx *gin.Context) {
 	ctx.Set("REQUEST_ID", requestId)
 
 	if nativeApiPrefix != "" && strings.HasPrefix(requestUrl, nativeApiPrefix) {
-		ctx.Set("NATIVE_API_RESOURCE", requestUrl[len(nativeApiPrefix) + 1:])
+		ctx.Set("NATIVE_API_RESOURCE", requestUrl[len(nativeApiPrefix)+1:])
 		this.NativeApi.Execute(ctx)
 		ctx.Abort()
 	} else {
@@ -50,8 +49,6 @@ func (this *RouterMiddleware) AfterRoute (ctx *gin.Context) {
 		if url.Fragment != "" {
 			requestUrl += "#" + url.Fragment
 		}
-
-		fmt.Println("=====================================", this.Routes.Maps)
 
 		if len(this.Routes.Maps) > 0 {
 			for _, stack := range this.Routes.Maps {
@@ -80,7 +77,7 @@ func (this *RouterMiddleware) AfterRoute (ctx *gin.Context) {
 						upgradeRequest := ctx.Request.Header.Get("Connection")
 						upgradeProtocol := ctx.Request.Header.Get("Upgrade")
 
-						if strings.ToLower(upgradeRequest) == "upgrade"  && strings.ToLower(upgradeProtocol) == "websocket" {
+						if strings.ToLower(upgradeRequest) == "upgrade" && strings.ToLower(upgradeProtocol) == "websocket" {
 							methodMatch = true
 						}
 					}
@@ -133,7 +130,7 @@ func (this *RouterMiddleware) AfterRoute (ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(404,
 			types.Response{
 				RequestId: requestId,
-				Code: 100404,
+				Code:      100404,
 				Message:   "No service provided at request \"" + requestUrl + "\"",
 				Data:      nil,
 			})
