@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"github.com/duanchi/min-gateway/routes"
 	"github.com/duanchi/min-gateway/service"
-	types2 "github.com/duanchi/min-gateway/types"
 	"github.com/duanchi/min/abstract"
 	"github.com/duanchi/min/types"
 	"github.com/duanchi/min/types/gateway"
@@ -22,20 +21,16 @@ import (
 type RestfulDispatcher struct {
 	abstract.Router
 
-	Routes *routes.Routes `autowired:"true"`
-	Services *routes.Services `autowired:"true"`
+	Routes               *routes.Routes                `autowired:"true"`
+	Services             *routes.Services              `autowired:"true"`
 	AuthorizationService *service.AuthorizationService `autowired:"true"`
-
-	DefaultSingleton bool `value:"${Authorization.DefaultSingleton}"`
 }
 
-func (this *RestfulDispatcher) Handle (path string, method string, params gin.Params, ctx *gin.Context) {
+func (this *RestfulDispatcher) Handle(path string, method string, params gin.Params, ctx *gin.Context) {
 	if urlValue, has := ctx.Get("url"); has {
 		url := urlValue.(string)
 		rawRequestId, _ := ctx.Get("REQUEST_ID")
 		requestId := rawRequestId.(string)
-		rawRoute, _ := ctx.Get("route")
-		route := rawRoute.(types2.Route)
 
 		var gatewayData = gateway.Data{}
 
@@ -116,33 +111,8 @@ func (this *RestfulDispatcher) Handle (path string, method string, params gin.Pa
 
 			if _, has := arrays.ContainsString([]string{"CREATE", "REFRESH", "REMOVE"}, strings.ToUpper(responseHeaders.Get("X-Gateway-Authorization-Action"))); has {
 				//进入授权流程
-				singleton := this.DefaultSingleton
-				if !this.DefaultSingleton && responseHeaders.Get("X-Gateway-Authorization-Singleton") == "true" {
-					singleton = true
-				}
 
-				if this.DefaultSingleton && responseHeaders.Get("X-Gateway-Authorization-Singleton") == "false" {
-					singleton = false
-				}
-
-				authorizeType := ""
-				if route.AuthorizeTypeKey != "" {
-					stack := strings.SplitN(route.AuthorizeTypeKey, ":", 2)
-
-
-					if len(stack) == 2 && stack[0] == "HEADER" {
-						authorizeType = ctx.GetHeader(stack[1])
-					} else if len(stack) == 2 {
-						authorizeType, _ = ctx.GetQuery(stack[1])
-					} else {
-						authorizeType, _ = ctx.GetQuery("platform")
-					}
-				}
-				if authorizeType == "" {
-					authorizeType = "default"
-				}
-
-				_, _, response, err := this.AuthorizationService.Handle(&responseHeaders, gatewayData, body, singleton, authorizeType, ctx)
+				_, _, response, err := this.AuthorizationService.Handle(&responseHeaders, gatewayData, body, ctx)
 
 				if err != nil {
 					panic(err)
@@ -150,7 +120,7 @@ func (this *RestfulDispatcher) Handle (path string, method string, params gin.Pa
 				responseBody, _ = json.Marshal(types.Response{
 					RequestId: requestId,
 					Status:    true,
-					Code: 0,
+					Code:      0,
 					Message:   "Ok",
 					Data:      response,
 				})
@@ -193,7 +163,7 @@ func restfulRequest(
 		responseBody, _ = json.Marshal(types.Response{
 			RequestId: requestId,
 			Status:    false,
-			Code: 100450,
+			Code:      100450,
 			Message:   "Gateway request error",
 			Data:      nil,
 		})
@@ -219,7 +189,7 @@ func restfulRequest(
 		responseBody, _ = json.Marshal(types.Response{
 			RequestId: requestId,
 			Status:    false,
-			Code: 100550,
+			Code:      100550,
 			Message:   "Gateway response error, " + requestErr.(*url.Error).Error(),
 			Data:      nil,
 		})
@@ -240,7 +210,7 @@ func restfulRequest(
 		responseBody, _ = json.Marshal(types.Response{
 			RequestId: requestId,
 			Status:    false,
-			Code: 100551,
+			Code:      100551,
 			Message:   "Gateway response error, nil response",
 			Data:      nil,
 		})

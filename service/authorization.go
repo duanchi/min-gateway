@@ -19,18 +19,18 @@ import (
 type AuthorizationService struct {
 	abstract.Service
 
-	JwtExpiresIn int64 `value:"${Authorization.Ttl}"`
-	TokenService *TokenService `autowired:"true"`
+	JwtExpiresIn   int64                   `value:"${Authorization.Ttl}"`
+	TokenService   *TokenService           `autowired:"true"`
 	StorageService *storage.StorageService `autowired:"true"`
-	ValueService *storage.ValuesService `autowired:"true"`
+	ValueService   *storage.ValuesService  `autowired:"true"`
 }
 
 type authorizationResponse struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn int64 `json:"expires_in"`
-	ExpireAt int64	`json:"expire_at"`
-	RefreshToken string `json:"refresh_token"`
-	RefreshTokenExpireAt int64 `json:"refresh_token_expire_at"`
+	AccessToken          string `json:"access_token"`
+	ExpiresIn            int64  `json:"expires_in"`
+	ExpireAt             int64  `json:"expire_at"`
+	RefreshToken         string `json:"refresh_token"`
+	RefreshTokenExpireAt int64  `json:"refresh_token_expire_at"`
 }
 
 type refreshAuthorizationRequest struct {
@@ -41,8 +41,6 @@ func (this *AuthorizationService) Handle(
 	header *http.Header,
 	gatewayData gateway.Data,
 	requestBody []byte,
-	singleton bool,
-	authorizeType string,
 	ctx *gin.Context,
 ) (
 	status int,
@@ -62,7 +60,6 @@ func (this *AuthorizationService) Handle(
 	responseHeaders.Del("X-Gateway-Authorization-More")
 	responseHeaders.Del("X-Gateway-Authorization-ExpiresIn")
 	responseHeaders.Del("X-Gateway-Authorization-Action")
-	responseHeaders.Del("X-Gateway-Authorization-Action-Singleton")
 	responseHeaders.Del("X-Gateway-Authorization-Remove-Multi")
 	responseHeaders.Del("X-Gateway-Authorization-Remove-Prefix")
 	status = http.StatusOK
@@ -75,8 +72,8 @@ func (this *AuthorizationService) Handle(
 		route := routeValue.(types2.Route)
 
 		prefix := "AUTH"
-		if len(route.AuthorizePrefix) > 0 && len(route.AuthorizePrefix) < 4  {
-			prefix = fmt.Sprintf("%0*s",4, route.AuthorizePrefix)
+		if len(route.AuthorizePrefix) > 0 && len(route.AuthorizePrefix) < 4 {
+			prefix = fmt.Sprintf("%0*s", 4, route.AuthorizePrefix)
 		} else if len(route.AuthorizePrefix) >= 4 {
 			prefix = route.AuthorizePrefix[0:4]
 		}
@@ -90,7 +87,7 @@ func (this *AuthorizationService) Handle(
 					expiresIn = this.JwtExpiresIn
 				}
 
-				expireAt, tokenErr := this.TokenService.CustomGenerate(data, prefix + ":", moreData, expiresIn)
+				expireAt, tokenErr := this.TokenService.CustomGenerate(data, prefix+":", moreData, expiresIn)
 
 				if tokenErr != nil {
 					panic(types.RuntimeError{
@@ -101,13 +98,13 @@ func (this *AuthorizationService) Handle(
 				}
 
 				response = map[string]interface{}{
-					"token": data,
+					"token":     data,
 					"expiresIn": expiresIn,
 					"expiresAt": expireAt,
 				}
 			} else {
 
-				accessToken, expireAt, refreshToken, refreshExpireAt, tokenErr := this.TokenService.Generate(data, prefix + ":", singleton, authorizeType, moreData)
+				accessToken, expireAt, refreshToken, refreshExpireAt, tokenErr := this.TokenService.Generate(data, prefix+":", moreData)
 
 				if tokenErr != nil {
 					panic(types.RuntimeError{
@@ -124,15 +121,13 @@ func (this *AuthorizationService) Handle(
 				}
 
 				response = authorizationResponse{
-					AccessToken: accessToken,
-					ExpiresIn: jwtExpiresIn,
-					ExpireAt: expireAt,
-					RefreshToken: refreshToken,
+					AccessToken:          accessToken,
+					ExpiresIn:            jwtExpiresIn,
+					ExpireAt:             expireAt,
+					RefreshToken:         refreshToken,
 					RefreshTokenExpireAt: refreshExpireAt,
 				}
 			}
-
-
 
 		case "REFRESH":
 			refreshRequest := refreshAuthorizationRequest{}
@@ -158,7 +153,7 @@ func (this *AuthorizationService) Handle(
 			/**
 			新建refresh-token
 			*/
-			accessToken, expireAt, refreshToken, refreshExpireAt, refreshErr := this.TokenService.Refresh(token.Issuer, token.Id, prefix + ":")
+			accessToken, expireAt, refreshToken, refreshExpireAt, refreshErr := this.TokenService.Refresh(token.Issuer, token.Id, prefix+":")
 
 			if refreshErr != nil {
 				panic(types.RuntimeError{
@@ -174,10 +169,10 @@ func (this *AuthorizationService) Handle(
 			}
 
 			response = authorizationResponse{
-				AccessToken: accessToken,
-				ExpiresIn: jwtExpiresIn,
-				ExpireAt: expireAt,
-				RefreshToken: refreshToken,
+				AccessToken:          accessToken,
+				ExpiresIn:            jwtExpiresIn,
+				ExpireAt:             expireAt,
+				RefreshToken:         refreshToken,
 				RefreshTokenExpireAt: refreshExpireAt,
 			}
 		case "REMOVE":
@@ -187,14 +182,13 @@ func (this *AuthorizationService) Handle(
 				}
 				for _, token := range strings.Split(multi, ",") {
 					fmt.Println("[REMOVE TOKEN] " + prefix + ":" + token)
-					this.TokenService.Delete(token, prefix + ":")
+					this.TokenService.Delete(token, prefix+":")
 				}
 			} else {
-				this.TokenService.Delete(gatewayData.Data.Token, prefix + ":")
+				this.TokenService.Delete(gatewayData.Data.Token, prefix+":")
 			}
 		}
 	}
-
 
 	return
 }

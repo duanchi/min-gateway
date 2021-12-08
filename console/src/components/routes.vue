@@ -39,7 +39,7 @@
 
             <h4 class="header-title">网关路由列表</h4>
             <p class="sub-header">
-              所有Heron Gateway网关配置的路由列表
+              所有Min Gateway网关配置的路由列表
             </p>
 
             <div class="table-responsive">
@@ -167,7 +167,7 @@
                     <b-form-radio-group
                       id="authorize"
                       v-model="createRoute.authorize"
-                      :options="[{value:true, text:'需要'}, {value:false, text:'不需要'}, {value:'authorize', text: '授权路由'}]"
+                      :options="[{value:true, text:'需要'}, {value:false, text:'不需要'}]"
                       buttons
                       button-variant="outline-primary"
                       size="sm"
@@ -175,13 +175,6 @@
                     ></b-form-radio-group>
                   </b-form-group>
                 </b-col>
-              </div>
-              <div v-if="createRoute.authorize === 'authorize'" class="form-group row">
-                <label class="col-sm-2 col-form-label" for="authorize_key">授权类型字段</label>
-                <div class="col-sm-8">
-                  <input type="text" id="authorize_key" class="form-control" v-model="createRoute.authorize_type_key" value="HEADER:X-Authorize-Platform">
-                  <p class="form-control-plaintext">QUERY:{query key}或HEADER:{header key}</p>
-                </div>
               </div>
               <div class="form-group row">
                 <label class="col-sm-2 col-form-label" for="authorize_prefix">授权因子</label>
