@@ -1,4 +1,4 @@
-package native_api
+package console_api
 
 import (
 	"github.com/duanchi/min/abstract"
@@ -10,6 +10,6 @@ type AuthorizeController struct {
 	abstract.RestController
 }
 
-func (this *AuthorizeController) Fetch (id string, resource string, parameters *gin.Params, ctx *gin.Context) (result interface{}, err types.Error) {
+func (this *AuthorizeController) Fetch(id string, resource string, parameters *gin.Params, ctx *gin.Context) (result interface{}, err types.Error) {
 	return "Ok", nil
 }

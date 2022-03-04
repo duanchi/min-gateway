@@ -2,9 +2,12 @@ env: "${ENV:development}"
 #服务配置
 application:
   server_port: "${SERVER_PORT:9080}"
+  name: "min-gateway"
 log:
   enabled: true
   level: "${LOG_LEVEL:debug}"
+task:
+  enabled: true
 authorization:
   dsn: "${AUTHORIZATION_DSN:redis://127.0.0.1:6379/0}"
   signature_key: "${AUTHORIZATION_SIGNATURE_KEY:}"
@@ -12,6 +15,13 @@ authorization:
   default_singleton: ${AUTHORIZATION_DEFAULT_SIGNLETON:false}
 gateway:
   data_path: "${GATEWAY_DATA_PATH:./data}"
+  config_refresh_interval: ${GATEWAY_CONFIG_REFRESH_INTERVAL:30}
+  console_api:
+    prefix: "${GATEWAY_CONSOLE_API_PREFIX:/_api}"
+    access_token: "${GATEWAY_CONSOLE_API_ACCESS_TOKEN:}"
   native_api:
-    prefix: "${GATEWAY_NATIVE_API_PREFIX:/_api}"
-    access_token: "${GATEWAY_NATIVE_API_ACCESS_TOKEN:}"
+    prefix: "${GATEWAY_NATIVE_API_PREFIX:/native}"
+discovery:
+  enabled: false
+  url: "nacos://192.168.203.32:8848/nacos/v1"
+  namespace_id: ""

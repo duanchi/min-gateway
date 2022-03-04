@@ -1,25 +1,27 @@
 package routes
 
 import (
+	"fmt"
 	"github.com/duanchi/min-gateway/service/storage"
 	"github.com/duanchi/min-gateway/types"
 	"github.com/duanchi/min/abstract"
 	util2 "github.com/duanchi/min/util"
 	"sort"
+	"strconv"
 )
 
 type Routes struct {
 	abstract.Bean
 
 	Maps types.RoutesArray
-	Raw types.RoutesMap
+	Raw  types.RoutesMap
 
-	StorageKey string `value:"GATEWAY:ROUTES"`
-	KEY string `value:"routes"`
+	StorageKey     string                  `value:"GATEWAY:ROUTES"`
+	KEY            string                  `value:"routes"`
 	StorageService *storage.StorageService `autowired:"true"`
 }
 
-func (this *Routes) Init () {
+func (this *Routes) Init() {
 	if !this.StorageService.Inited {
 		storage.WaitGroup.Wait()
 	}
@@ -33,14 +35,16 @@ func (this *Routes) Init () {
 		this.Raw = data.(types.RoutesMap)
 	}
 	this.Refresh()
+
+	fmt.Println("Loaded " + strconv.Itoa(len(this.Raw)) + " Route(s) Configuration!")
 }
 
-func (this *Routes) GetAll () types.RoutesArray {
+func (this *Routes) GetAll() types.RoutesArray {
 	this.Init()
 	return this.Maps
 }
 
-func (this *Routes) Add (route types.Route) {
+func (this *Routes) Add(route types.Route) {
 
 	route.Id = util2.GenerateUUID().String()
 	if this.Maps == nil {
@@ -56,14 +60,14 @@ func (this *Routes) Add (route types.Route) {
 	this.Refresh()
 }
 
-func (this *Routes) Modify (id string, modifiedRoute types.Route) {
+func (this *Routes) Modify(id string, modifiedRoute types.Route) {
 	this.Raw[id] = modifiedRoute
 	// this.StorageService.HSet(this.StorageKey, id, modifiedRoute, -1)
 	this.StorageService.Save(id, modifiedRoute, this.KEY)
 	this.Refresh()
 }
 
-func (this *Routes) Sort (orders []string) {
+func (this *Routes) Sort(orders []string) {
 	for index, id := range orders {
 		for key, route := range this.Raw {
 			if id == key {
@@ -77,14 +81,14 @@ func (this *Routes) Sort (orders []string) {
 	this.Refresh()
 }
 
-func (this *Routes) Remove (id string) {
+func (this *Routes) Remove(id string) {
 	delete(this.Raw, id)
 	// this.StorageService.HRemove(this.StorageKey, id)
 	this.StorageService.Remove(id, this.KEY)
 	this.Refresh()
 }
 
-func (this *Routes) Refresh () {
+func (this *Routes) Refresh() {
 	newMap := types.RoutesArray{}
 
 	for _, route := range this.Raw {

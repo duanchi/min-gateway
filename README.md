@@ -92,7 +92,7 @@ AUTHORIZATION_TTL = 7200
 
 ## 内置API
 
-内置API是网关自身进行操作的restful-api, 路由可以通过 `GATEWAY_NATIVE_API_PREFIX`进行配置, 同时可以定义 `GATEWAY_NATIVE_API_ACCESS_TOKEN`保证访问的安全性
+内置API是网关自身进行操作的restful-api, 路由可以通过 `GATEWAY_CONSOLE_API_PREFIX`进行配置, 同时可以定义 `GATEWAY_NATIVE_API_ACCESS_TOKEN`保证访问的安全性
 
 #### `PUT /routes`
 

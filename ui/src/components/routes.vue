@@ -36,6 +36,7 @@
                 <b-button variant="outline-secondary" @click="resetOrder()"><span><i class="mdi mdi-reorder-horizontal" /> 还原排序</span></b-button>
               </b-button-group>
             </template>
+            <b-button class="float-right mr-4" variant="outline-secondary" @click="refresh"><span><i class="mdi mdi-refresh" /> 刷新路由</span></b-button>
 
             <h4 class="header-title">网关路由列表</h4>
             <p class="sub-header">
@@ -404,6 +405,9 @@ export default {
     },
     removeInstancePlaceholder (index) {
       this.createRoute.rewrite.splice(index, 1)
+    },
+    refresh () {
+      routes.refresh()
     },
     reorder () {
       if (this.reordering) {

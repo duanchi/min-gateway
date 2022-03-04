@@ -37,7 +37,7 @@ export default class Restful extends Api {
   _setHeaders (headers, parameters, values, options) {
     const token = AuthorizeService.getToken()
     if (token !== null || token !== undefined) {
-      headers['X-Heron-Authorization'] = token
+      headers['X-Min-Gateway-Authorization'] = token
     }
     return super._setHeaders(headers, parameters, values, options)
   }

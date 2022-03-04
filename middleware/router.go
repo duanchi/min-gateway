@@ -17,9 +17,10 @@ import (
 type RouterMiddleware struct {
 	abstract.Middleware
 
-	Routes    *routes.Routes       `autowired:"true"`
-	Services  *routes.Services     `autowired:"true"`
-	NativeApi *NativeApiMiddleware `autowired:"true"`
+	Routes     *routes.Routes        `autowired:"true"`
+	Services   *routes.Services      `autowired:"true"`
+	NativeApi  *NativeApiMiddleware  `autowired:"true"`
+	ConsoleApi *ConsoleApiMiddleware `autowired:"true"`
 }
 
 func (this *RouterMiddleware) AfterRoute(ctx *gin.Context) {
@@ -34,12 +35,17 @@ func (this *RouterMiddleware) AfterRoute(ctx *gin.Context) {
 	}
 
 	nativeApiPrefix := config.Get("Gateway.NativeApi.Prefix").(string)
+	consoleApiPrefix := config.Get("Gateway.ConsoleApi.Prefix").(string)
 
 	ctx.Set("REQUEST_ID", requestId)
 
 	if nativeApiPrefix != "" && strings.HasPrefix(requestUrl, nativeApiPrefix) {
 		ctx.Set("NATIVE_API_RESOURCE", requestUrl[len(nativeApiPrefix)+1:])
 		this.NativeApi.Execute(ctx)
+		ctx.Abort()
+	} else if consoleApiPrefix != "" && strings.HasPrefix(requestUrl, consoleApiPrefix) {
+		ctx.Set("CONSOLE_API_RESOURCE", requestUrl[len(consoleApiPrefix)+1:])
+		this.ConsoleApi.Execute(ctx)
 		ctx.Abort()
 	} else {
 		if url.RawQuery != "" {

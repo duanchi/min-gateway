@@ -1,13 +1,13 @@
 package routes
 
 import (
+	"fmt"
 	"github.com/duanchi/min-gateway/service/storage"
 	"github.com/duanchi/min-gateway/types"
 	"github.com/duanchi/min/abstract"
 	util2 "github.com/duanchi/min/util"
+	"strconv"
 )
-
-
 
 type ServicesArray []types.Service
 
@@ -18,12 +18,12 @@ type Services struct {
 
 	ConfigFile string `value:"/services.json"`
 
-	StorageKey string `value:"GATEWAY:SERVICES"`
-	KEY string `value:"services"`
+	StorageKey     string                  `value:"GATEWAY:SERVICES"`
+	KEY            string                  `value:"services"`
 	StorageService *storage.StorageService `autowired:"true"`
 }
 
-func (this *Services) Init () {
+func (this *Services) Init() {
 	if !this.StorageService.Inited {
 		storage.WaitGroup.Wait()
 	}
@@ -35,14 +35,16 @@ func (this *Services) Init () {
 	} else {
 		this.Maps = data.(types.ServicesMap)
 	}
+
+	fmt.Println("Loaded " + strconv.Itoa(len(this.Maps)) + " Service(s) Configuration!")
 }
 
-func (this *Services) GetAll () types.ServicesMap {
+func (this *Services) GetAll() types.ServicesMap {
 	this.Init()
 	return this.Maps
 }
 
-func (this *Services) Add (service types.Service) {
+func (this *Services) Add(service types.Service) {
 	service.Id = util2.GenerateUUID().String()
 	if this.Maps == nil {
 		this.Maps = types.ServicesMap{}
@@ -52,13 +54,13 @@ func (this *Services) Add (service types.Service) {
 	this.StorageService.Save(service.Id, service, this.KEY)
 }
 
-func (this *Services) Modify (id string, modifiedService types.Service) {
+func (this *Services) Modify(id string, modifiedService types.Service) {
 	this.Maps[id] = modifiedService
 	// this.StorageService.HSet(this.StorageKey, id, modifiedService, -1)
 	this.StorageService.Save(id, modifiedService, this.KEY)
 }
 
-func (this *Services) Remove (id string) {
+func (this *Services) Remove(id string) {
 	delete(this.Maps, id)
 	// this.StorageService.HRemove(this.StorageKey, id)
 	this.StorageService.Remove(id, this.KEY)

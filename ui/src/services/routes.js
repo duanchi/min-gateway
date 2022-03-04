@@ -59,4 +59,10 @@ class Routes extends Restful {
     parameters: ['data']
   })
   reOrder (data) {}
+
+  @Request({
+    method: 'PUT',
+    path: '/?action=refresh'
+  })
+  refresh () {}
 }()
