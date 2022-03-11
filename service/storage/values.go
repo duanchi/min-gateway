@@ -16,22 +16,26 @@ import (
 type ValuesService struct {
 	abstract.Service
 
-	DataPath string `value:"${Gateway.DataPath}"`
+	DataPath        string `value:"${Gateway.DataPath}"`
 	JwtSignatureKey string `value:"${Authorization.SignatureKey}"`
-	JwtExpiresIn int64 `value:"${Authorization.Ttl}"`
-	Dsn string `value:"${Authorization.Dsn}"`
-	random string
-	instance *redis.Client
-	context context.Context
+	JwtExpiresIn    int64  `value:"${Authorization.Ttl}"`
+	Dsn             string `value:"${Authorization.Dsn}"`
+	random          string
+	instance        *redis.Client
+	context         context.Context
 }
 
-func (this *ValuesService) Init () {
+func (this *ValuesService) Init() {
 	this.context = context.Background()
 	this.random = util.GenerateUUID().String()
 	this.Instance()
 }
 
-func (this *ValuesService) Instance () *redis.Client {
+func (this *ValuesService) useMemoryCache() bool {
+	return this.Dsn == ""
+}
+
+func (this *ValuesService) Instance() *redis.Client {
 	if this.instance == nil {
 		options, _ := redis.ParseURL(this.Dsn)
 
@@ -44,21 +48,20 @@ func (this *ValuesService) Instance () *redis.Client {
 	return this.instance
 }
 
-
-func (this *ValuesService) Set (key string, value interface{}, ttl int64) (err error) {
-	valueString,_ := json.Marshal(value)
+func (this *ValuesService) Set(key string, value interface{}, ttl int64) (err error) {
+	valueString, _ := json.Marshal(value)
 	_, err = this.Instance().Set(
 		this.context,
 		key,
 		valueString,
-		time.Duration(ttl) * time.Second,
-		).Result()
+		time.Duration(ttl)*time.Second,
+	).Result()
 
 	return
 }
 
-func (this *ValuesService) HSet (key string, field string, value interface{}, ttl int64) (err error) {
-	valueString,_ := json.Marshal(value)
+func (this *ValuesService) HSet(key string, field string, value interface{}, ttl int64) (err error) {
+	valueString, _ := json.Marshal(value)
 	if ttl == -1 {
 		_, err = this.Instance().HSet(
 			this.context,
@@ -72,15 +75,14 @@ func (this *ValuesService) HSet (key string, field string, value interface{}, tt
 			key,
 			field,
 			valueString,
-			time.Duration(ttl) * time.Second,
+			time.Duration(ttl)*time.Second,
 		).Result()
 	}
-
 
 	return
 }
 
-func (this *ValuesService) HGet (key string, field string, value interface{}) (has bool, err error) {
+func (this *ValuesService) HGet(key string, field string, value interface{}) (has bool, err error) {
 	has = false
 	valueString, err := this.Instance().HGet(this.context, key, field).Result()
 
@@ -92,7 +94,7 @@ func (this *ValuesService) HGet (key string, field string, value interface{}) (h
 	return
 }
 
-func (this *ValuesService) HGetAll (key string, value interface{}) (has bool, err error) {
+func (this *ValuesService) HGetAll(key string, value interface{}) (has bool, err error) {
 	has = false
 	// *value, err = this.Instance().HGetAll(key).Result()
 
@@ -116,7 +118,7 @@ func (this *ValuesService) HGetAll (key string, value interface{}) (has bool, er
 	return
 }
 
-func (this *ValuesService) Get (key string, value interface{}) (has bool, err error) {
+func (this *ValuesService) Get(key string, value interface{}) (has bool, err error) {
 	has = false
 	valueString, err := this.Instance().Get(this.context, key).Result()
 
@@ -129,26 +131,26 @@ func (this *ValuesService) Get (key string, value interface{}) (has bool, err er
 	return
 }
 
-func (this *ValuesService) Remove (key string) {
+func (this *ValuesService) Remove(key string) {
 	this.Instance().Del(this.context, key)
 }
 
-func (this *ValuesService) HRemove (key string, field string) {
+func (this *ValuesService) HRemove(key string, field string) {
 	this.Instance().HDel(this.context, key, field)
 }
 
-func (this *ValuesService) Has (key string) (has bool) {
+func (this *ValuesService) Has(key string) (has bool) {
 	num, _ := this.Instance().Exists(this.context, key).Result()
 
 	return num > 0
 }
 
-func (this *ValuesService) HHas (key string, field string) (has bool) {
+func (this *ValuesService) HHas(key string, field string) (has bool) {
 	has, _ = this.Instance().HExists(this.context, key, field).Result()
 	return
 }
 
-func (this *ValuesService) GetAll (value interface{}) (has bool, err error) {
+func (this *ValuesService) GetAll(value interface{}) (has bool, err error) {
 	keys, err := this.Instance().Keys(this.context, "*").Result()
 
 	if err == nil {

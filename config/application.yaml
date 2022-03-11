@@ -6,6 +6,9 @@ application:
 log:
   enabled: true
   level: "${LOG_LEVEL:debug}"
+db:
+  enabled: true
+  dsn: "sqlite://./data/sqlite.db"
 task:
   enabled: true
 authorization:
