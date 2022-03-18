@@ -112,110 +112,15 @@ func (this *StorageService) Get(field string) interface{} {
 	return nil
 }
 
-/*func (this *StorageService) Set (key string, value interface{}, ttl int64) (err error) {
-	valueString,_ := json.Marshal(value)
-	this.Instance().Write(valueString)
+func (this *StorageService) Export() (data []byte, err error) {
+	jsonFile, err := os.Open(this.DataPath + "/configuration.json")
+	defer jsonFile.Close()
 
-	return
-}*/
-
-/*func (this *StorageService) Set (key string, value interface{}, ttl int64) (err error) {
-	valueString,_ := json.Marshal(value)
-	_, err = this.Instance().Set(
-		key,
-		valueString,
-		time.Duration(ttl) * time.Second,
-		).Result()
-	this.instance().Write(valueString)
-
-	return
-}*/
-
-/*func (this *StorageService) HSet (key string, field string, value interface{}, ttl int64) (err error) {
-	valueString,_ := json.Marshal(value)
-	if ttl == -1 {
-		_, err = this.Instance().HSet(
-			key,
-			field,
-			valueString,
-		).Result()
-	} else {
-		_, err = this.Instance().HSet(
-			key,
-			field,
-			valueString,
-			time.Duration(ttl) * time.Second,
-		).Result()
-	}
-
+	data, err = ioutil.ReadAll(jsonFile)
 
 	return
 }
 
-func (this *StorageService) HGet (key string, field string, value interface{}) (has bool, err error) {
-	has = false
-	valueString, err := this.Instance().HGet(key, field).Result()
-
-	if err != nil {
-		return
-	}
-	has = true
-	err = json.Unmarshal([]byte(valueString), value)
-	return
+func (this *StorageService) Import(data []byte) {
+	ioutil.WriteFile(this.DataPath+"/configuration.json", data, 0755)
 }
-
-func (this *StorageService) HGetAll (key string, value interface{}) (has bool, err error) {
-	has = false
-	// *value, err = this.Instance().HGetAll(key).Result()
-
-	valueStringList, err := this.Instance().HGetAll(key).Result()
-
-	if err != nil {
-		return
-	}
-	has = true
-
-	for key, valueString := range valueStringList {
-		val := reflect.New(reflect.TypeOf(value).Elem().Elem())
-
-		err = json.Unmarshal([]byte(valueString), val.Interface())
-		if err != nil {
-			log.Fatal(err)
-		}
-		reflect.ValueOf(value).Elem().SetMapIndex(reflect.ValueOf(key), val.Elem())
-	}
-	// err = json.Unmarshal([]byte(valueString), value)
-	return
-}
-
-func (this *StorageService) Get (key string, value interface{}) (has bool, err error) {
-	has = false
-	valueString, err := this.Instance().Get(key).Result()
-
-	if err != nil {
-		return
-	}
-	has = true
-	err = json.Unmarshal([]byte(valueString), value)
-
-	return
-}
-
-func (this *StorageService) Remove (key string) {
-	this.Instance().Del(key)
-}
-
-func (this *StorageService) HRemove (key string, field string) {
-	this.Instance().HDel(key, field)
-}
-
-func (this *StorageService) Has (key string) (has bool) {
-	num, _ := this.Instance().Exists(key).Result()
-
-	return num > 0
-}
-
-func (this *StorageService) HHas (key string, field string) (has bool) {
-	has, _ = this.Instance().HExists(key, field).Result()
-	return
-}*/

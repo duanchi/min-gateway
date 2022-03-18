@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/duanchi/min-gateway/routes"
 	"github.com/duanchi/min-gateway/util"
 	"github.com/duanchi/min/abstract"
@@ -16,6 +17,8 @@ import (
 
 type RouterMiddleware struct {
 	abstract.Middleware
+
+	EnableGrayInstance bool `value:"${Gateway.EnableGrayInstance}"`
 
 	Routes     *routes.Routes        `autowired:"true"`
 	Services   *routes.Services      `autowired:"true"`
@@ -106,23 +109,34 @@ func (this *RouterMiddleware) AfterRoute(ctx *gin.Context) {
 								n = rand.Intn(len(service.Instances) - 1)
 							}
 
-							clientId := ctx.GetHeader("Client-Id")
-
 							ctxUrl := service.Instances[n] + requestUrl
 							ctxRoute := stack
 
-							if clientId != "" && len(service.Gray) > 0 {
-								for _, client := range service.Gray {
-									if client.Id == clientId {
-										ctxUrl = client.Uri + requestUrl
-										ctxRoute = stack
-										break
+							if this.EnableGrayInstance {
+								/**
+								启用 Instance-Id 代替 Client-Id 用于标识灰度请求
+								*/
+								instanceId := ctx.GetHeader("X-Instance-Id")
+
+								if instanceId == "" {
+									instanceId = ctx.GetHeader("Client-Id")
+								}
+
+								if instanceId != "" && len(service.Gray) > 0 {
+									for _, instance := range service.Gray {
+										if instance.Id == instanceId {
+											ctxUrl = instance.Uri + requestUrl
+											ctxRoute = stack
+											ctx.Set("GRAY_INSTANCE", instance.Id)
+											fmt.Println("[" + requestId + "] Force switch to gray service " + instance.Id + " at " + instance.Uri + " !!!")
+											break
+										}
 									}
 								}
 							}
 
-							ctx.Set("url", ctxUrl)
-							ctx.Set("route", ctxRoute)
+							ctx.Set("URL", ctxUrl)
+							ctx.Set("ROUTE", ctxRoute)
 
 							ctx.Next()
 

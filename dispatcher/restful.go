@@ -17,6 +17,7 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
+	"time"
 )
 
 type RestfulDispatcher struct {
@@ -26,16 +27,19 @@ type RestfulDispatcher struct {
 	Services             *routes.Services              `autowired:"true"`
 	AuthorizationService *service.AuthorizationService `autowired:"true"`
 
-	DefaultSingleton bool `value:"${Authorization.DefaultSingleton}"`
+	DefaultSingleton     bool  `value:"${Authorization.DefaultSingleton}"`
+	GlobalRequestTimeout int64 `value:"${Gateway.GlobalRequestTimeout}"`
 }
 
 func (this *RestfulDispatcher) Handle(path string, method string, params gin.Params, ctx *gin.Context) {
-	if urlValue, has := ctx.Get("url"); has {
+	if urlValue, has := ctx.Get("URL"); has {
 		url := urlValue.(string)
 		rawRequestId, _ := ctx.Get("REQUEST_ID")
 		requestId := rawRequestId.(string)
-		rawRoute, _ := ctx.Get("route")
+		rawRoute, _ := ctx.Get("ROUTE")
 		route := rawRoute.(types2.Route)
+		rawInstanceId, _ := ctx.Get("GRAY_INSTANCE")
+		instanceId := rawInstanceId.(string)
 
 		var gatewayData = gateway.Data{}
 
@@ -91,12 +95,23 @@ func (this *RestfulDispatcher) Handle(path string, method string, params gin.Par
 		parseRequestHeader(&requestHeader, additionalHeader)
 		body, _ := ioutil.ReadAll(ctx.Request.Body)
 
+		timeout := route.Timeout
+
+		if route.Timeout == 0 {
+			timeout = this.GlobalRequestTimeout
+		}
+
+		if timeout <= 0 {
+			timeout = 0
+		}
+
 		responseStatus, responseHeaders, responseBody, err := restfulRequest(
 			requestId,
 			url,
 			ctx.Request.Method,
 			requestHeader,
 			body,
+			timeout,
 		)
 
 		contentType := ""
@@ -168,6 +183,9 @@ func (this *RestfulDispatcher) Handle(path string, method string, params gin.Par
 		}
 
 		ctx.Writer.Header().Set("X-Request-Id", requestId)
+		if instanceId != "" {
+			ctx.Writer.Header().Set("X-Instance-Id", instanceId)
+		}
 
 		ctx.Data(responseStatus, contentType, responseBody)
 	}
@@ -179,13 +197,16 @@ func restfulRequest(
 	method string,
 	requestHeaders http.Header,
 	requestBody []byte,
+	timeout int64,
 ) (
 	status int,
 	responseHeaders http.Header,
 	responseBody []byte,
 	err error,
 ) {
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: time.Duration(timeout) * time.Second,
+	}
 	request, err := http.NewRequest(method, requestUrl, bytes.NewReader(requestBody))
 	if err != nil {
 		// handle error

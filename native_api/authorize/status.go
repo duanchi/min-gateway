@@ -1,7 +1,6 @@
 package authorize
 
 import (
-	"fmt"
 	"github.com/duanchi/min-gateway/service"
 	"github.com/duanchi/min/abstract"
 	"github.com/duanchi/min/types"
@@ -67,8 +66,6 @@ func (this *StatusController) Fetch(id string, resource string, parameters *gin.
 			if err != nil {
 				panic(err)
 			}
-
-			fmt.Println("AHTHORIZATION", accessToken)
 
 			return map[string]interface{}{
 				"user":  userId,
