@@ -2,7 +2,8 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/duanchi/min-gateway/routes"
+	"github.com/duanchi/min-gateway/mapper"
+	"github.com/duanchi/min-gateway/storage"
 	"github.com/duanchi/min-gateway/util"
 	"github.com/duanchi/min/abstract"
 	"github.com/duanchi/min/config"
@@ -20,14 +21,17 @@ type RouterMiddleware struct {
 
 	EnableGrayInstance bool `value:"${Gateway.EnableGrayInstance}"`
 
-	Routes     *routes.Routes        `autowired:"true"`
-	Services   *routes.Services      `autowired:"true"`
-	NativeApi  *NativeApiMiddleware  `autowired:"true"`
-	ConsoleApi *ConsoleApiMiddleware `autowired:"true"`
+	Route           *storage.RouteStorage           `autowired:"true"`
+	RouteRewrite    *storage.RouteRewriteStorage    `autowired:"true"`
+	Service         *storage.ServiceStorage         `autowired:"true"`
+	ServiceInstance *storage.ServiceInstanceStorage `autowired:"true"`
+	NativeApi       *NativeApiMiddleware            `autowired:"true"`
+	ConsoleApi      *ConsoleApiMiddleware           `autowired:"true"`
 }
 
 func (this *RouterMiddleware) AfterRoute(ctx *gin.Context) {
 
+	routes := this.Route.GetAllRoutes()
 	url := ctx.Request.URL
 	method := ctx.Request.Method
 	requestUrl := url.Path
@@ -59,30 +63,30 @@ func (this *RouterMiddleware) AfterRoute(ctx *gin.Context) {
 			requestUrl += "#" + url.Fragment
 		}
 
-		if len(this.Routes.Maps) > 0 {
-			for _, stack := range this.Routes.Maps {
+		if len(routes) > 0 {
+			for _, stack := range routes {
 
 				methodMatch := false
 				urlMatch := false
 
-				switch stack.Url.Type {
+				switch mapper.CONSTANT.URL_TYPE[stack.UrlType] {
 				case "regex":
-					regex, _ := regexp.Compile(stack.Url.Match)
+					regex, _ := regexp.Compile(stack.Pattern)
 					urlMatch = regex.MatchString(requestUrl)
 
 				case "fnmatch":
-					urlMatch = util.Fnmatch(stack.Url.Match, requestUrl, 0)
+					urlMatch = util.Fnmatch(stack.Pattern, requestUrl, 0)
 
 				case "path":
-					urlMatch = strings.HasPrefix(requestUrl, stack.Url.Match)
+					urlMatch = strings.HasPrefix(requestUrl, stack.Pattern)
 				}
 
-				_, matchAll := arrays.ContainsString(stack.Method, "ALL")
-				_, match := arrays.ContainsString(stack.Method, method)
+				_, matchAll := arrays.ContainsString(strings.Split(stack.Methods, ","), "ALL")
+				_, match := arrays.ContainsString(strings.Split(stack.Methods, ","), method)
 				if matchAll || match {
 					methodMatch = true
 				} else {
-					if _, has := arrays.ContainsString(stack.Method, "WEBSOCKET"); has && method == "GET" {
+					if _, has := arrays.ContainsString(strings.Split(stack.Methods, ","), "WEBSOCKET"); has && method == "GET" {
 						upgradeRequest := ctx.Request.Header.Get("Connection")
 						upgradeProtocol := ctx.Request.Header.Get("Upgrade")
 
@@ -94,55 +98,72 @@ func (this *RouterMiddleware) AfterRoute(ctx *gin.Context) {
 
 				if methodMatch && urlMatch {
 
-					for _, service := range this.Services.Maps {
-						if service.Name == stack.Service {
-							if len(stack.Rewrite) > 0 {
-								for match, replace := range stack.Rewrite {
-									replacePattern, _ := regexp.Compile(match)
-									requestUrl = replacePattern.ReplaceAllString(requestUrl, replace)
-								}
-							}
+					// service, _ := this.Service.Get(stack.ServiceId)
+					instances := this.ServiceInstance.GetByServiceId(stack.ServiceId)
+					rewrites := this.RouteRewrite.GetByRouteId(stack.Id)
 
-							n := 0
-
-							if len(service.Instances) > 1 {
-								n = rand.Intn(len(service.Instances) - 1)
-							}
-
-							ctxUrl := service.Instances[n] + requestUrl
-							ctxRoute := stack
-
-							if this.EnableGrayInstance {
-								/**
-								启用 Instance-Id 代替 Client-Id 用于标识灰度请求
-								*/
-								instanceId := ctx.GetHeader("X-Instance-Id")
-
-								if instanceId == "" {
-									instanceId = ctx.GetHeader("Client-Id")
-								}
-
-								if instanceId != "" && len(service.Gray) > 0 {
-									for _, instance := range service.Gray {
-										if instance.Id == instanceId {
-											ctxUrl = instance.Uri + requestUrl
-											ctxRoute = stack
-											ctx.Set("GRAY_INSTANCE", instance.Id)
-											fmt.Println("[" + requestId + "] Force switch to gray service " + instance.Id + " at " + instance.Uri + " !!!")
-											break
-										}
-									}
-								}
-							}
-
-							ctx.Set("URL", ctxUrl)
-							ctx.Set("ROUTE", ctxRoute)
-
-							ctx.Next()
-
-							return
+					if len(rewrites) > 0 {
+						for _, rewrite := range rewrites {
+							replacePattern, _ := regexp.Compile(rewrite.Pattern)
+							requestUrl = replacePattern.ReplaceAllString(requestUrl, rewrite.Rewrite)
 						}
 					}
+
+					ctxUrl := ""
+					ctxRoute := stack
+
+					instanceId := ctx.GetHeader("X-Instance-Id")
+
+					if instanceId == "" {
+						instanceId = ctx.GetHeader("Client-Id")
+					}
+
+					if instanceId != "" {
+						for _, instance := range instances {
+							if instance.InstanceId == instanceId {
+								ctxUrl = instance.Url + requestUrl
+								ctxRoute = stack
+								ctx.Set("GRAY_INSTANCE", instance.Id)
+								fmt.Println("[" + requestId + "] Force switch to gray service " + instance.InstanceId + " at " + instance.Url + " !!!")
+								break
+							}
+						}
+					} else {
+						liveInstances := []mapper.ServiceInstance{}
+						for _, instance := range instances {
+							if instance.GrayFlag != 1 && instance.OnlineFlag == 1 {
+								liveInstances = append(liveInstances, instance)
+							}
+						}
+
+						if len(liveInstances) > 0 {
+							n := 0
+							total := len(instances)
+
+							if total > 1 {
+								n = rand.Intn(total)
+							}
+
+							ctxUrl = liveInstances[n].Url + requestUrl
+							ctxRoute = stack
+						} else {
+							ctx.AbortWithStatusJSON(404,
+								types.Response{
+									RequestId: util.CtxGet("REQUEST_ID", ctx).(string),
+									Code:      100404,
+									Message:   "No instance provided on service",
+									Data:      nil,
+								})
+						}
+
+					}
+
+					ctx.Set("URL", ctxUrl)
+					ctx.Set("ROUTE", ctxRoute)
+
+					ctx.Next()
+
+					return
 				}
 			}
 		}

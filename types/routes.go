@@ -15,7 +15,7 @@ type Route struct {
 	AuthorizeTypeKey string            `json:"authorize_type_key"`
 	CustomToken      bool              `json:"custom_token"`
 	Rewrite          map[string]string `json:"rewrite"`
-	Description      string            `json:"description"`
+	Description      string            `jqu'fenson:"description"`
 	Timeout          int64             `json:"timeout"`
 	Order            int               `json:"order"`
 }

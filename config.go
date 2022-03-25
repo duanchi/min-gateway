@@ -9,7 +9,6 @@ import (
 	"github.com/duanchi/min-gateway/routes"
 	"github.com/duanchi/min-gateway/service"
 	"github.com/duanchi/min-gateway/service/storage"
-	"github.com/duanchi/min-gateway/task"
 	_interface "github.com/duanchi/min/interface"
 	"github.com/duanchi/min/types"
 )
@@ -58,7 +57,7 @@ var Config = struct {
 		NativeApiMiddleware     middleware.NativeApiMiddleware     `middleware:"true"`
 		// CustomMiddleware middleware.CustomMiddleware `middleware:"true"`
 
-		ConfigRefreshTask task.ConfigRefreshTask `task:"true"`
+		ConfigRefreshTask scheduled.ConfigRefreshTask `task:"true"`
 	}
 }{
 	Config: types.Config{

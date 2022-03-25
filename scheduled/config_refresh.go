@@ -1,4 +1,4 @@
-package task
+package scheduled
 
 import (
 	"fmt"
@@ -9,14 +9,14 @@ import (
 )
 
 type ConfigRefreshTask struct {
-	abstract.Task
+	abstract.Scheduled
 	Interval int64 `value:"${Gateway.ConfigRefreshInterval}"`
 
 	RoutesService   *routes.Routes   `autowired:"true"`
 	ServicesService *routes.Services `autowired:"true"`
 }
 
-func (this *ConfigRefreshTask) OnStart() {
+func (this *ConfigRefreshTask) Run() {
 
 	if this.Interval <= 0 {
 		return

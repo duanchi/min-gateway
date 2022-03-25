@@ -9,7 +9,7 @@ log:
 db:
   enabled: true
   dsn: "sqlite://./data/sqlite.db"
-task:
+scheduled:
   enabled: true
 authorization:
   dsn: "${AUTHORIZATION_DSN:}"

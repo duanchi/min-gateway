@@ -12,4 +12,4 @@ require (
 	github.com/satori/go.uuid v1.2.0
 )
 
-// replace github.com/duanchi/min => ../min
+replace github.com/duanchi/min => ../min
