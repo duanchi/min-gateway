@@ -11,7 +11,7 @@ type ServiceInstance struct {
 	Weight        int    // 权重
 	Healthy       int    // 是否健康 1健康, 0 不健康
 	Url           string // 服务URL
-	ServiceId     int64
+	ServiceId     string
 	EphemeralFlag int       // 是否临时实例
 	CreateTime    time.Time `xorm:"created"`
 	UpdateTime    time.Time `xorm:"updated"`

@@ -3,8 +3,8 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/duanchi/min-gateway/mapper"
 	"github.com/duanchi/min-gateway/service/storage"
-	types2 "github.com/duanchi/min-gateway/types"
 	"github.com/duanchi/min/abstract"
 	"github.com/duanchi/min/types"
 	"github.com/duanchi/min/types/gateway"
@@ -19,18 +19,17 @@ import (
 type AuthorizationService struct {
 	abstract.Service
 
-	JwtExpiresIn int64 `value:"${Authorization.Ttl}"`
-	TokenService *TokenService `autowired:"true"`
-	StorageService *storage.StorageService `autowired:"true"`
+	JwtExpiresIn int64                  `value:"${Authorization.Ttl}"`
+	TokenService *TokenService          `autowired:"true"`
 	ValueService *storage.ValuesService `autowired:"true"`
 }
 
 type authorizationResponse struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn int64 `json:"expires_in"`
-	ExpireAt int64	`json:"expire_at"`
-	RefreshToken string `json:"refresh_token"`
-	RefreshTokenExpireAt int64 `json:"refresh_token_expire_at"`
+	AccessToken          string `json:"access_token"`
+	ExpiresIn            int64  `json:"expires_in"`
+	ExpireAt             int64  `json:"expire_at"`
+	RefreshToken         string `json:"refresh_token"`
+	RefreshTokenExpireAt int64  `json:"refresh_token_expire_at"`
 }
 
 type refreshAuthorizationRequest struct {
@@ -72,11 +71,11 @@ func (this *AuthorizationService) Handle(
 
 	if routeValue, has := ctx.Get("route"); has {
 
-		route := routeValue.(types2.Route)
+		route := routeValue.(mapper.Route)
 
 		prefix := "AUTH"
-		if len(route.AuthorizePrefix) > 0 && len(route.AuthorizePrefix) < 4  {
-			prefix = fmt.Sprintf("%0*s",4, route.AuthorizePrefix)
+		if len(route.AuthorizePrefix) > 0 && len(route.AuthorizePrefix) < 4 {
+			prefix = fmt.Sprintf("%0*s", 4, route.AuthorizePrefix)
 		} else if len(route.AuthorizePrefix) >= 4 {
 			prefix = route.AuthorizePrefix[0:4]
 		}
@@ -84,13 +83,13 @@ func (this *AuthorizationService) Handle(
 		switch action {
 		case "CREATE":
 
-			if route.CustomToken {
+			if mapper.CONSTANT.IS_CUSTOM_TOKEN[route.CustomToken] {
 
 				if expiresIn == 0 {
 					expiresIn = this.JwtExpiresIn
 				}
 
-				expireAt, tokenErr := this.TokenService.CustomGenerate(data, prefix + ":", moreData, expiresIn)
+				expireAt, tokenErr := this.TokenService.CustomGenerate(data, prefix+":", moreData, expiresIn)
 
 				if tokenErr != nil {
 					panic(types.RuntimeError{
@@ -101,13 +100,13 @@ func (this *AuthorizationService) Handle(
 				}
 
 				response = map[string]interface{}{
-					"token": data,
+					"token":     data,
 					"expiresIn": expiresIn,
 					"expiresAt": expireAt,
 				}
 			} else {
 
-				accessToken, expireAt, refreshToken, refreshExpireAt, tokenErr := this.TokenService.Generate(data, prefix + ":", singleton, authorizeType, moreData)
+				accessToken, expireAt, refreshToken, refreshExpireAt, tokenErr := this.TokenService.Generate(data, prefix+":", singleton, authorizeType, moreData)
 
 				if tokenErr != nil {
 					panic(types.RuntimeError{
@@ -124,15 +123,13 @@ func (this *AuthorizationService) Handle(
 				}
 
 				response = authorizationResponse{
-					AccessToken: accessToken,
-					ExpiresIn: jwtExpiresIn,
-					ExpireAt: expireAt,
-					RefreshToken: refreshToken,
+					AccessToken:          accessToken,
+					ExpiresIn:            jwtExpiresIn,
+					ExpireAt:             expireAt,
+					RefreshToken:         refreshToken,
 					RefreshTokenExpireAt: refreshExpireAt,
 				}
 			}
-
-
 
 		case "REFRESH":
 			refreshRequest := refreshAuthorizationRequest{}
@@ -158,7 +155,7 @@ func (this *AuthorizationService) Handle(
 			/**
 			新建refresh-token
 			*/
-			accessToken, expireAt, refreshToken, refreshExpireAt, refreshErr := this.TokenService.Refresh(token.Issuer, token.Id, prefix + ":")
+			accessToken, expireAt, refreshToken, refreshExpireAt, refreshErr := this.TokenService.Refresh(token.Issuer, token.Id, prefix+":")
 
 			if refreshErr != nil {
 				panic(types.RuntimeError{
@@ -174,10 +171,10 @@ func (this *AuthorizationService) Handle(
 			}
 
 			response = authorizationResponse{
-				AccessToken: accessToken,
-				ExpiresIn: jwtExpiresIn,
-				ExpireAt: expireAt,
-				RefreshToken: refreshToken,
+				AccessToken:          accessToken,
+				ExpiresIn:            jwtExpiresIn,
+				ExpireAt:             expireAt,
+				RefreshToken:         refreshToken,
 				RefreshTokenExpireAt: refreshExpireAt,
 			}
 		case "REMOVE":
@@ -187,14 +184,13 @@ func (this *AuthorizationService) Handle(
 				}
 				for _, token := range strings.Split(multi, ",") {
 					fmt.Println("[REMOVE TOKEN] " + prefix + ":" + token)
-					this.TokenService.Delete(token, prefix + ":")
+					this.TokenService.Delete(token, prefix+":")
 				}
 			} else {
-				this.TokenService.Delete(gatewayData.Data.Token, prefix + ":")
+				this.TokenService.Delete(gatewayData.Data.Token, prefix+":")
 			}
 		}
 	}
-
 
 	return
 }

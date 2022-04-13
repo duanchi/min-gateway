@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"fmt"
+	"github.com/duanchi/min-gateway/mapper"
 	"github.com/duanchi/min-gateway/service"
-	types2 "github.com/duanchi/min-gateway/types"
 	"github.com/duanchi/min/abstract"
 	"github.com/duanchi/min/types"
 	"github.com/gin-gonic/gin"
@@ -17,22 +17,22 @@ type AuthorizationMiddleware struct {
 	TokenService *service.TokenService `autowired:"true"`
 }
 
-func (this *AuthorizationMiddleware) AfterRoute (ctx *gin.Context) {
+func (this *AuthorizationMiddleware) AfterRoute(ctx *gin.Context) {
 
 	/**
 	需要进行token验证的
-	 */
+	*/
 	routeValue, has := ctx.Get("route")
 
 	if has {
-		route := routeValue.(types2.Route)
+		route := routeValue.(mapper.Route)
 
-		if route.Authorize {
+		if mapper.CONSTANT.IS_AUTHORIZE[route.NeedAuthorize] {
 			accessTokenRaw := ctx.GetHeader("Authorization")
 			accessToken := ""
 			if accessTokenRaw == "" {
 				accessToken = ctx.Query("token")
-			} else if route.CustomToken {
+			} else if mapper.CONSTANT.IS_CUSTOM_TOKEN[route.CustomToken] {
 				accessToken = accessTokenRaw
 			} else {
 				accessTokenStack := strings.Split(accessTokenRaw, " ")
@@ -42,13 +42,13 @@ func (this *AuthorizationMiddleware) AfterRoute (ctx *gin.Context) {
 			}
 
 			prefix := "0000"
-			if len(route.AuthorizePrefix) > 0 && len(route.AuthorizePrefix) < 4  {
-				prefix = fmt.Sprintf("%0*s",4, route.AuthorizePrefix)
+			if len(route.AuthorizePrefix) > 0 && len(route.AuthorizePrefix) < 4 {
+				prefix = fmt.Sprintf("%0*s", 4, route.AuthorizePrefix)
 			} else if len(route.AuthorizePrefix) >= 4 {
 				prefix = route.AuthorizePrefix[0:4]
 			}
 
-			if route.CustomToken {
+			if mapper.CONSTANT.IS_CUSTOM_TOKEN[route.CustomToken] {
 
 				if ok, more, err := this.TokenService.CustomAuth(accessToken, prefix); ok {
 					if err != nil {
@@ -63,7 +63,7 @@ func (this *AuthorizationMiddleware) AfterRoute (ctx *gin.Context) {
 					requestId, _ := ctx.Get("REQUEST_ID")
 					ctx.AbortWithStatusJSON(http.StatusUnauthorized, types.Response{
 						RequestId: requestId.(string),
-						Code: 100401,
+						Code:      100401,
 						Message:   "授权过期或错误",
 						Data:      nil,
 					})
@@ -94,7 +94,7 @@ func (this *AuthorizationMiddleware) AfterRoute (ctx *gin.Context) {
 				} else {
 					ctx.AbortWithStatusJSON(http.StatusUnauthorized, types.Response{
 						RequestId: uuid.NewV4().String(),
-						Code:    100401,
+						Code:      100401,
 						Message:   "授权过期或错误",
 						Data:      nil,
 					})

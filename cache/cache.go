@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/duanchi/min/abstract"
+	"github.com/duanchi/min/config"
 	"github.com/go-redis/redis/v8"
 	"reflect"
 	"strings"
@@ -23,7 +24,8 @@ func (this *CacheService) FlushDB() {
 }
 
 func (this *CacheService) Init() {
-	options, _ := redis.ParseURL(this.DSN)
+	dsn := config.Get("Cache.Dsn").(string)
+	options, _ := redis.ParseURL(dsn)
 	this.Engine = redis.NewClient(options)
 	this.ctx = context.Background()
 }
@@ -106,6 +108,11 @@ func (this *CacheService) SetWithTTL(prefix string, key string, value interface{
 
 func (this *CacheService) Increase(prefix string, key string) {
 	this.Engine.Incr(this.ctx, prefix+":"+key)
+}
+
+func (this *CacheService) DelPrefix(prefix string) {
+	this.Engine.Del(this.ctx, prefix+":*").Result()
+	this.Engine.HDel(this.ctx, prefix, "*").Result()
 }
 
 func (this *CacheService) Del(prefix string, key string) {

@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"github.com/duanchi/min"
 	cache2 "github.com/duanchi/min-gateway/cache"
 	"github.com/duanchi/min-gateway/mapper"
 	"github.com/duanchi/min/abstract"
@@ -27,7 +28,7 @@ func (this *IntegrationProtocolConfigStorage) GetList() (configs mapper.Integrat
 
 func (this *IntegrationProtocolConfigStorage) DataToCache() {
 	var configs []mapper.IntegrationProtocolConfig
-	heron.Db.Find(&configs)
+	min.Db.Find(&configs)
 
 	for _, config := range configs {
 		this.CacheService.Set(this.CACHE_PREFIX, config.Code, config)

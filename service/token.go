@@ -102,7 +102,6 @@ func (this *TokenService) Auth(tokenString string, prefix string) bool {
 	if now > claim.ExpiresAt {
 		return false
 	}
-
 	has, err := this.Values.Get(prefix+":"+claim.Id, &token)
 
 	if has && now <= token.Expiretime {

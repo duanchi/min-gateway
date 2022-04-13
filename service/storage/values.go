@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/duanchi/min/abstract"
+	"github.com/duanchi/min/config"
 	"github.com/duanchi/min/log"
 	"github.com/duanchi/min/util"
 	"github.com/go-redis/redis/v8"
@@ -37,7 +38,8 @@ func (this *ValuesService) useMemoryCache() bool {
 
 func (this *ValuesService) Instance() *redis.Client {
 	if this.instance == nil {
-		options, _ := redis.ParseURL(this.Dsn)
+		dsn := config.Get("Authorization.Dsn").(string)
+		options, _ := redis.ParseURL(dsn)
 
 		options.MaxRetries = 3
 		options.PoolSize = 8

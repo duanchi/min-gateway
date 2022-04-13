@@ -8,11 +8,14 @@ log:
   level: "${LOG_LEVEL:debug}"
 db:
   enabled: true
-  dsn: "sqlite://./data/sqlite.db"
+  dsn: "${DB_DSN}"
+cache:
+  enabled: true
+  dsn: "redis://${CACHE_HOST}:${CACHE_PORT}/1"
 scheduled:
   enabled: true
 authorization:
-  dsn: "${AUTHORIZATION_DSN:}"
+  dsn: "${AUTHORIZATION_DSN:redis://127.0.0.1:6379/0}"
   signature_key: "${AUTHORIZATION_SIGNATURE_KEY:}"
   ttl: ${AUTHORIZATION_TTL:7200}
   default_singleton: ${AUTHORIZATION_DEFAULT_SIGNLETON:false}

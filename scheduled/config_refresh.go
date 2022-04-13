@@ -2,7 +2,7 @@ package scheduled
 
 import (
 	"fmt"
-	"github.com/duanchi/min-gateway/routes"
+	"github.com/duanchi/min-gateway/service"
 	"github.com/duanchi/min/abstract"
 	"strconv"
 	"time"
@@ -12,8 +12,8 @@ type ConfigRefreshTask struct {
 	abstract.Scheduled
 	Interval int64 `value:"${Gateway.ConfigRefreshInterval}"`
 
-	RoutesService   *routes.Routes   `autowired:"true"`
-	ServicesService *routes.Services `autowired:"true"`
+	RoutesService   *service.Route   `autowired:"true"`
+	ServicesService *service.Service `autowired:"true"`
 }
 
 func (this *ConfigRefreshTask) Run() {

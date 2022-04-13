@@ -31,11 +31,12 @@ type RouterMiddleware struct {
 
 func (this *RouterMiddleware) AfterRoute(ctx *gin.Context) {
 
-	routes := this.Route.GetAllRoutes()
+	routes := this.Route.GetAll()
 	url := ctx.Request.URL
 	method := ctx.Request.Method
 	requestUrl := url.Path
 	requestId := ctx.Request.Header.Get("Request-Id")
+	grayInstanceId := ""
 
 	if requestId == "" {
 		requestId = util2.GenerateUUID().String()
@@ -100,7 +101,7 @@ func (this *RouterMiddleware) AfterRoute(ctx *gin.Context) {
 
 					// service, _ := this.Service.Get(stack.ServiceId)
 					instances := this.ServiceInstance.GetByServiceId(stack.ServiceId)
-					rewrites := this.RouteRewrite.GetByRouteId(stack.Id)
+					rewrites := this.RouteRewrite.GetByRouteId(stack.RouteId)
 
 					if len(rewrites) > 0 {
 						for _, rewrite := range rewrites {
@@ -123,7 +124,7 @@ func (this *RouterMiddleware) AfterRoute(ctx *gin.Context) {
 							if instance.InstanceId == instanceId {
 								ctxUrl = instance.Url + requestUrl
 								ctxRoute = stack
-								ctx.Set("GRAY_INSTANCE", instance.Id)
+								grayInstanceId = instance.InstanceId
 								fmt.Println("[" + requestId + "] Force switch to gray service " + instance.InstanceId + " at " + instance.Url + " !!!")
 								break
 							}
@@ -158,6 +159,7 @@ func (this *RouterMiddleware) AfterRoute(ctx *gin.Context) {
 
 					}
 
+					ctx.Set("GRAY_INSTANCE", grayInstanceId)
 					ctx.Set("URL", ctxUrl)
 					ctx.Set("ROUTE", ctxRoute)
 

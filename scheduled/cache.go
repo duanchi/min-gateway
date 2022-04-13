@@ -6,7 +6,7 @@ import (
 	"github.com/duanchi/min/abstract"
 )
 
-type CacheTask struct {
+type CacheSchedule struct {
 	abstract.Scheduled
 	ServiceInstanceStorage           *storage.ServiceInstanceStorage           `bean:"autowired"`
 	ServiceStorage                   *storage.ServiceStorage                   `bean:"autowired"`
@@ -19,7 +19,7 @@ type CacheTask struct {
 	CacheService *cache.CacheService `bean:"autowired"`
 }
 
-func (this *CacheTask) Run() {
+func (this *CacheSchedule) Run() {
 	this.CacheService.FlushDB()
 	this.ServiceStorage.DataToCache()
 	this.ServiceInstanceStorage.DataToCache()

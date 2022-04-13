@@ -1,30 +1,27 @@
 package dispatcher
 
 import (
-	"github.com/duanchi/min-gateway/routes"
-	"github.com/duanchi/min-gateway/rpc/service"
-	"github.com/gin-gonic/gin"
+	service2 "github.com/duanchi/min-gateway/rpc/service"
+	"github.com/duanchi/min-gateway/service"
 	"github.com/duanchi/min/abstract"
-	"github.com/duanchi/min/util/arrays"
-	"regexp"
-	"strings"
+	"github.com/gin-gonic/gin"
 )
 
 type RpcDispatcher struct {
 	abstract.Router
 
-	Routes *routes.Routes `autowired:"true"`
-	Services *routes.Services `autowired:"true"`
-	ExtraService *service.ExtraService `autowired:"true"`
+	Routes       *service.Route         `autowired:"true"`
+	Services     *service.Service       `autowired:"true"`
+	ExtraService *service2.ExtraService `autowired:"true"`
 }
 
-func (this *RpcDispatcher) Handle (path string, method string, params gin.Params, ctx *gin.Context) {
-	url, _ := params.Get("url")
-	method = strings.ToUpper(method)
+func (this *RpcDispatcher) Handle(path string, method string, params gin.Params, ctx *gin.Context) {
+	/*url, _ := params.Get("url")
+	method = strings.ToUpper(method)*/
 
 	// res, rpcErr := this.ExtraService.Test("DEF", "STRING")
 
-	if len(this.Routes.Maps) > 0 {
+	/*if len(this.Routes.Maps) > 0 {
 		for _, stack := range this.Routes.Maps {
 			switch stack.Url.Type {
 			case "regex":
@@ -44,12 +41,12 @@ func (this *RpcDispatcher) Handle (path string, method string, params gin.Params
 							/*serviceUrl := service.Instances[rand.Intn(len(service.Instances) - 1)]
 							serviceName := "rpc"
 							serviceClass := "RpcService"
-							serviceMethod := "Execute"*/
+							serviceMethod := "Execute"
 
 						}
 					}
 				}
 			}
 		}
-	}
+	}*/
 }

@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"github.com/duanchi/min"
 	cache2 "github.com/duanchi/min-gateway/cache"
 	"github.com/duanchi/min-gateway/mapper"
 	"github.com/duanchi/min/abstract"
@@ -22,7 +23,7 @@ func (this *IntegrationKeyPairStorage) GetList(integrationId int64) (integration
 
 func (this *IntegrationKeyPairStorage) DataToCache() {
 	var integrationKeyPairs []mapper.IntegrationKeyPair
-	heron.Db.Find(&integrationKeyPairs)
+	min.Db.Find(&integrationKeyPairs)
 
 	for _, integrationKeyPair := range integrationKeyPairs {
 		this.CacheService.Set(this.CACHE_PREFIX, strconv.FormatInt(integrationKeyPair.IntegrationId, 10)+":"+strconv.FormatInt(integrationKeyPair.Id, 10), integrationKeyPair)

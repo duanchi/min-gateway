@@ -4,9 +4,8 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"github.com/duanchi/min-gateway/routes"
+	"github.com/duanchi/min-gateway/mapper"
 	"github.com/duanchi/min-gateway/service"
-	types2 "github.com/duanchi/min-gateway/types"
 	"github.com/duanchi/min/abstract"
 	"github.com/duanchi/min/types"
 	"github.com/duanchi/min/types/gateway"
@@ -23,8 +22,6 @@ import (
 type RestfulDispatcher struct {
 	abstract.Router
 
-	Routes               *routes.Routes                `autowired:"true"`
-	Services             *routes.Services              `autowired:"true"`
 	AuthorizationService *service.AuthorizationService `autowired:"true"`
 
 	DefaultSingleton     bool  `value:"${Authorization.DefaultSingleton}"`
@@ -37,7 +34,7 @@ func (this *RestfulDispatcher) Handle(path string, method string, params gin.Par
 		rawRequestId, _ := ctx.Get("REQUEST_ID")
 		requestId := rawRequestId.(string)
 		rawRoute, _ := ctx.Get("ROUTE")
-		route := rawRoute.(types2.Route)
+		route := rawRoute.(mapper.Route)
 		rawInstanceId, _ := ctx.Get("GRAY_INSTANCE")
 		instanceId := rawInstanceId.(string)
 
@@ -95,23 +92,13 @@ func (this *RestfulDispatcher) Handle(path string, method string, params gin.Par
 		parseRequestHeader(&requestHeader, additionalHeader)
 		body, _ := ioutil.ReadAll(ctx.Request.Body)
 
-		timeout := route.Timeout
-
-		if route.Timeout == 0 {
-			timeout = this.GlobalRequestTimeout
-		}
-
-		if timeout <= 0 {
-			timeout = 0
-		}
-
 		responseStatus, responseHeaders, responseBody, err := restfulRequest(
 			requestId,
 			url,
 			ctx.Request.Method,
 			requestHeader,
 			body,
-			timeout,
+			0,
 		)
 
 		contentType := ""

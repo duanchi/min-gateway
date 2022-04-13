@@ -1,8 +1,8 @@
 package console_api
 
 import (
-	"github.com/duanchi/min-gateway/routes"
-	types2 "github.com/duanchi/min-gateway/types"
+	"github.com/duanchi/min-gateway/service"
+	types2 "github.com/duanchi/min-gateway/types/request"
 	"github.com/duanchi/min/abstract"
 	"github.com/duanchi/min/types"
 	"github.com/gin-gonic/gin"
@@ -11,25 +11,24 @@ import (
 type RoutesController struct {
 	abstract.RestController
 
-	Routes   *routes.Routes   `autowired:"true"`
-	Services *routes.Services `autowired:"true"`
+	RoutesService  *service.Route   `autowired:"true"`
+	ServiceService *service.Service `autowired:"true"`
 }
 
 func (this *RoutesController) Fetch(id string, resource string, parameters *gin.Params, ctx *gin.Context) (result interface{}, err types.Error) {
-	this.Routes.Refresh()
-	return this.Routes.GetAll(), nil
+	return this.RoutesService.GetAll(), nil
 }
 
 func (this *RoutesController) Create(id string, resource string, parameters *gin.Params, ctx *gin.Context) (result interface{}, err types.Error) {
-	var route types2.Route
+	var route types2.RouteRequest
 	ctx.ShouldBindJSON(&route)
-	this.Routes.Add(route)
+	this.RoutesService.Add(route)
 	return true, nil
 }
 
 func (this *RoutesController) Remove(id string, resource string, parameters *gin.Params, ctx *gin.Context) (result interface{}, err types.Error) {
 	id = ctx.Query("id")
-	this.Routes.Remove(id)
+	this.RoutesService.Remove(id)
 	return true, nil
 }
 
@@ -39,7 +38,7 @@ func (this *RoutesController) Update(id string, resource string, parameters *gin
 
 	if action == "refresh" {
 		this.Init()
-		this.Services.Init()
+		this.ServiceService.Init()
 		return true, nil
 	}
 
@@ -52,9 +51,9 @@ func (this *RoutesController) Update(id string, resource string, parameters *gin
 				Message: bindErr.Error(),
 			}
 		}
-		this.Routes.Sort(order)
+		// this.Routes.Sort(order)
 	} else {
-		var route types2.Route
+		var route types2.RouteRequest
 		id = ctx.Query("id")
 		bindErr := ctx.ShouldBindJSON(&route)
 		if bindErr != nil {
@@ -62,7 +61,7 @@ func (this *RoutesController) Update(id string, resource string, parameters *gin
 				Message: bindErr.Error(),
 			}
 		}
-		this.Routes.Modify(id, route)
+		this.RoutesService.Modify(id, route)
 	}
 	return true, nil
 }

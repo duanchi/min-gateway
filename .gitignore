@@ -12,3 +12,5 @@ dashboard/data/
 data/
 
 vendor/
+
+*.local

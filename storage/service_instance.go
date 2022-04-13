@@ -5,7 +5,7 @@ import (
 	cache2 "github.com/duanchi/min-gateway/cache"
 	"github.com/duanchi/min-gateway/mapper"
 	"github.com/duanchi/min/abstract"
-	"github.com/duanchi/min/cache"
+	"strings"
 )
 
 type ServiceInstanceStorage struct {
@@ -19,7 +19,7 @@ func (this *ServiceInstanceStorage) Get(instanceId string) (instance mapper.Serv
 	return
 }
 
-func (this *ServiceInstanceStorage) GetByServiceId(id int64) (instances []mapper.ServiceInstance) {
+func (this *ServiceInstanceStorage) GetByServiceId(id string) (instances []mapper.ServiceInstance) {
 	allInstances := []mapper.ServiceInstance{}
 	this.CacheService.GetList(this.CACHE_PREFIX, &allInstances)
 
@@ -27,6 +27,21 @@ func (this *ServiceInstanceStorage) GetByServiceId(id int64) (instances []mapper
 		if instance.ServiceId == id {
 			instances = append(instances, instance)
 		}
+	}
+
+	return
+}
+
+func (this *ServiceInstanceStorage) GetAllGroupByServiceId() (instances map[string][]mapper.ServiceInstance) {
+	instances = map[string][]mapper.ServiceInstance{}
+	allInstances := []mapper.ServiceInstance{}
+	this.CacheService.GetList(this.CACHE_PREFIX, &allInstances)
+
+	for _, instance := range allInstances {
+		if _, has := instances[instance.ServiceId]; !has {
+			instances[instance.ServiceId] = []mapper.ServiceInstance{}
+		}
+		instances[instance.ServiceId] = append(instances[instance.ServiceId], instance)
 	}
 
 	return
@@ -42,10 +57,37 @@ func (this *ServiceInstanceStorage) Add(instance mapper.ServiceInstance) {
 	this.CacheService.Set(this.CACHE_PREFIX, instance.InstanceId, instance)
 }
 
+func (this *ServiceInstanceStorage) AddList(instances []mapper.ServiceInstance) {
+	_, err := min.Db.Insert(&instances)
+	if err == nil {
+		for _, instance := range instances {
+			this.CacheService.Set(this.CACHE_PREFIX, instance.InstanceId, instance)
+		}
+	}
+}
+
 func (this *ServiceInstanceStorage) Remove(instanceId string) {
 	var instance mapper.ServiceInstance
 	min.Db.Where("instance_id = ?", instanceId).Delete(instance)
 	this.CacheService.Del(this.CACHE_PREFIX, instance.InstanceId)
+}
+
+func (this *ServiceInstanceStorage) RemoveList(instanceIds []string) {
+	var instance mapper.ServiceInstance
+	min.Db.Where("instance_id in (?)", strings.Join(instanceIds, ",")).Delete(instance)
+
+	for _, id := range instanceIds {
+		this.CacheService.Del(this.CACHE_PREFIX, id)
+	}
+}
+
+func (this *ServiceInstanceStorage) RemoveByServiceId(serviceId int64) {
+	var instances []mapper.ServiceInstance
+	min.Db.Where("service_id = ?", serviceId).Find(&instances)
+
+	for _, instance := range instances {
+		this.CacheService.Del(this.CACHE_PREFIX, instance.InstanceId)
+	}
 }
 
 func (this *ServiceInstanceStorage) DataToCache() {
@@ -55,19 +97,4 @@ func (this *ServiceInstanceStorage) DataToCache() {
 	for _, instance := range instances {
 		this.CacheService.Set(this.CACHE_PREFIX, instance.InstanceId, instance)
 	}
-}
-
-func (this *ServiceInstanceStorage) cacheGet(key string) interface{} {
-	if cache.Has(this.CACHE_PREFIX + key) {
-		return cache.Get(this.CACHE_PREFIX + key)
-	}
-	return interface{}(nil)
-}
-
-func (this *ServiceInstanceStorage) cacheSet(key string, value interface{}) {
-	cache.Set(this.CACHE_PREFIX+key, value)
-}
-
-func (this *ServiceInstanceStorage) cacheDel(key string) {
-	cache.Del(this.CACHE_PREFIX + key)
 }
