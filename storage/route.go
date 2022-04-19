@@ -1,11 +1,12 @@
 package storage
 
 import (
-	"fmt"
 	"github.com/duanchi/min"
 	cache2 "github.com/duanchi/min-gateway/cache"
 	"github.com/duanchi/min-gateway/mapper"
+	"github.com/duanchi/min-gateway/types"
 	"github.com/duanchi/min/abstract"
+	"sort"
 	"strconv"
 )
 
@@ -40,15 +41,31 @@ func (this *RouteStorage) GetAll() (routes []mapper.Route) {
 	return
 }
 
+func (this *RouteStorage) GetAllSorted() (routes types.RouteSlice) {
+	this.CacheService.GetList(this.CACHE_PREFIX, &routes)
+	sort.Sort(routes)
+	return
+}
+
 func (this *RouteStorage) GetByRouteId(id string) (route mapper.Route) {
 	this.CacheService.Get(this.CACHE_PREFIX, id, &route)
+	return
+}
+
+func (this *RouteStorage) GetLastSort() (sort int64) {
+	sort = 1
+	route := mapper.Route{}
+
+	if route.Id > 0 {
+		sort += route.Id + 1
+	}
+
 	return
 }
 
 func (this *RouteStorage) Update(route mapper.Route) (ok bool) {
 	_, err := min.Db.Where("route_id = ?", route.RouteId).Cols("pattern", "url_type", "methods", "service_id", "need_authorize", "authorize_prefix", "authorize_type_key", "custom_token", "description", "sort").Update(route)
 
-	fmt.Println(err)
 	if err == nil {
 		this.DataToCache()
 		return true
@@ -69,8 +86,16 @@ func (this *RouteStorage) Add(route mapper.Route) (id string, ok bool) {
 }
 
 func (this *RouteStorage) Remove(id string) {
-	route := this.GetByRouteId(id)
+	route := mapper.Route{}
 	min.Db.Where("route_id = ?", route.RouteId).Delete(route)
+	this.DataToCache()
+}
+
+func (this *RouteStorage) Sort(sorts []string) {
+	for index, routeId := range sorts {
+		min.Db.Where("route_id = ?", routeId).Table(new(mapper.Route)).Update(map[string]interface{}{"sort": index})
+	}
+
 	this.DataToCache()
 }
 

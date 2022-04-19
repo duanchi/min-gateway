@@ -112,7 +112,7 @@ func (this *CacheService) Increase(prefix string, key string) {
 
 func (this *CacheService) DelPrefix(prefix string) {
 	this.Engine.Del(this.ctx, prefix+":*").Result()
-	this.Engine.HDel(this.ctx, prefix, "*").Result()
+	this.Engine.Del(this.ctx, prefix).Result()
 }
 
 func (this *CacheService) Del(prefix string, key string) {

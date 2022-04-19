@@ -23,7 +23,7 @@ type Route struct {
 func (this *Route) Init() {}
 
 func (this *Route) GetAll() []response.RouteResponse {
-	rawArray := this.RouteStorage.GetAll()
+	rawArray := this.RouteStorage.GetAllSorted()
 	routeArray := []response.RouteResponse{}
 	rewriteMap := this.RouteRewriteStorage.GetAllGroupByRouteId()
 
@@ -58,8 +58,9 @@ func (this *Route) GetAll() []response.RouteResponse {
 func (this *Route) Add(route request.RouteRequest) {
 
 	route.Id = util2.GenerateUUID().String()
-	allRoutes := this.RouteStorage.GetAll()
-	route.Order = len(allRoutes)
+	sort := this.RouteStorage.GetLastSort()
+	fmt.Println("SORT", sort)
+	route.Order = sort
 
 	this.RouteStorage.Add(mapper.Route{
 		RouteId:          route.Id,
@@ -92,12 +93,10 @@ func (this *Route) Modify(id string, route request.RouteRequest) {
 
 	rawRoute, ok := this.RouteStorage.GetFromDB(id)
 
-	fmt.Println(route)
-
 	if ok {
 		updated := this.RouteStorage.Update(mapper.Route{
 			Id:               rawRoute.Id,
-			RouteId:          route.Id,
+			RouteId:          id,
 			Pattern:          route.Url.Match,
 			UrlType:          mapper.CONSTANT.URL_TYPE_REVERSE[route.Url.Type],
 			Methods:          strings.Join(route.Method, ","),
@@ -115,12 +114,12 @@ func (this *Route) Modify(id string, route request.RouteRequest) {
 				rewrites := []mapper.RouteRewrite{}
 				for pattern, rewrite := range route.Rewrite {
 					rewrites = append(rewrites, mapper.RouteRewrite{
-						RouteId: route.Id,
+						RouteId: id,
 						Pattern: pattern,
 						Rewrite: rewrite,
 					})
 				}
-				this.RouteRewriteStorage.RemoveByRouteId(route.Id)
+				this.RouteRewriteStorage.RemoveByRouteId(id)
 				this.RouteRewriteStorage.AddList(rewrites)
 			}
 		}
@@ -128,20 +127,15 @@ func (this *Route) Modify(id string, route request.RouteRequest) {
 }
 
 func (this *Route) Sort(orders []string) {
-	/*for index, id := range orders {
-		for key, route := range this.Raw {
-			if id == key {
-				route.Order = index
-				this.Raw[key] = route
-				break
-			}
-		}
-	}
-	this.StorageService.Update()
-	this.Refresh()*/
+	this.RouteStorage.Sort(orders)
 }
 
 func (this *Route) Remove(id string) {
 	this.RouteStorage.Remove(id)
 	this.RouteRewriteStorage.RemoveByRouteId(id)
+}
+
+func (this *Route) Reload() {
+	this.RouteStorage.DataToCache()
+	this.RouteRewriteStorage.DataToCache()
 }

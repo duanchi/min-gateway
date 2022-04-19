@@ -17,5 +17,5 @@ type RouteRequest struct {
 	Rewrite          map[string]string `json:"rewrite"`
 	Description      string            `json:"description"`
 	Timeout          int64             `json:"timeout"`
-	Order            int               `json:"order"`
+	Order            int64             `json:"order"`
 }

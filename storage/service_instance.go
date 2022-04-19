@@ -5,7 +5,6 @@ import (
 	cache2 "github.com/duanchi/min-gateway/cache"
 	"github.com/duanchi/min-gateway/mapper"
 	"github.com/duanchi/min/abstract"
-	"strings"
 )
 
 type ServiceInstanceStorage struct {
@@ -49,50 +48,42 @@ func (this *ServiceInstanceStorage) GetAllGroupByServiceId() (instances map[stri
 
 func (this *ServiceInstanceStorage) Update(instance mapper.ServiceInstance) {
 	min.Db.ID(instance.Id).Update(instance)
-	this.CacheService.Set(this.CACHE_PREFIX, instance.InstanceId, instance)
+	this.DataToCache()
 }
 
 func (this *ServiceInstanceStorage) Add(instance mapper.ServiceInstance) {
 	min.Db.Insert(instance)
-	this.CacheService.Set(this.CACHE_PREFIX, instance.InstanceId, instance)
+	this.DataToCache()
 }
 
 func (this *ServiceInstanceStorage) AddList(instances []mapper.ServiceInstance) {
-	_, err := min.Db.Insert(&instances)
-	if err == nil {
-		for _, instance := range instances {
-			this.CacheService.Set(this.CACHE_PREFIX, instance.InstanceId, instance)
-		}
-	}
+	min.Db.Insert(&instances)
+	this.DataToCache()
 }
 
 func (this *ServiceInstanceStorage) Remove(instanceId string) {
 	var instance mapper.ServiceInstance
 	min.Db.Where("instance_id = ?", instanceId).Delete(instance)
-	this.CacheService.Del(this.CACHE_PREFIX, instance.InstanceId)
+	this.DataToCache()
 }
 
 func (this *ServiceInstanceStorage) RemoveList(instanceIds []string) {
 	var instance mapper.ServiceInstance
-	min.Db.Where("instance_id in (?)", strings.Join(instanceIds, ",")).Delete(instance)
-
-	for _, id := range instanceIds {
-		this.CacheService.Del(this.CACHE_PREFIX, id)
-	}
+	min.Db.In("instance_id", instanceIds).Delete(instance)
+	this.DataToCache()
 }
 
-func (this *ServiceInstanceStorage) RemoveByServiceId(serviceId int64) {
-	var instances []mapper.ServiceInstance
-	min.Db.Where("service_id = ?", serviceId).Find(&instances)
-
-	for _, instance := range instances {
-		this.CacheService.Del(this.CACHE_PREFIX, instance.InstanceId)
-	}
+func (this *ServiceInstanceStorage) RemoveByServiceId(serviceId string) {
+	var instance mapper.ServiceInstance
+	min.Db.Where("service_id = ?", serviceId).Delete(&instance)
+	this.DataToCache()
 }
 
 func (this *ServiceInstanceStorage) DataToCache() {
 	var instances []mapper.ServiceInstance
 	min.Db.Find(&instances)
+
+	this.CacheService.DelPrefix(this.CACHE_PREFIX)
 
 	for _, instance := range instances {
 		this.CacheService.Set(this.CACHE_PREFIX, instance.InstanceId, instance)

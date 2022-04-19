@@ -113,15 +113,22 @@ func (this *Service) Modify(id string, modifiedService request.Service) {
 
 	if ok {
 		service.Name = modifiedService.Name
-		this.ServiceInstanceStorage.RemoveByServiceId(service.Id)
+		this.ServiceInstanceStorage.RemoveByServiceId(service.Code)
 		updateOk := this.ServiceStorage.Update(service)
 
 		if updateOk {
 			insertInstances := []mapper.ServiceInstance{}
 			if len(modifiedService.Instances) > 0 {
 				for _, instance := range modifiedService.Instances {
+
+					instanceId := instance.Id
+
+					if instanceId == "" {
+						instanceId = util.GenerateUUID().String()
+					}
+
 					insertInstances = append(insertInstances, mapper.ServiceInstance{
-						InstanceId:    instance.Id,
+						InstanceId:    instanceId,
 						GrayFlag:      0,
 						OnlineFlag:    1,
 						DynamicFlag:   0,
@@ -161,7 +168,6 @@ func (this *Service) Modify(id string, modifiedService request.Service) {
 }
 
 func (this *Service) Remove(id string) {
-	service, _ := this.ServiceStorage.GetByCode(id)
 	this.ServiceStorage.Remove(id)
-	this.ServiceInstanceStorage.RemoveByServiceId(service.Id)
+	this.ServiceInstanceStorage.RemoveByServiceId(id)
 }

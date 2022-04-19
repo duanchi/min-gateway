@@ -32,7 +32,6 @@ func (this *ServiceStorage) GetAll() (services []mapper.Service, ok bool) {
 }
 
 func (this *ServiceStorage) Update(service mapper.Service) (ok bool) {
-	fmt.Println("asdfasdfasdfasfd")
 	_, err := min.Db.ID(service.Id).Cols("code", "name", "load_balance_type").Update(service)
 	if err == nil {
 		this.DataToCache()
@@ -55,7 +54,7 @@ func (this *ServiceStorage) Add(service mapper.Service) (ok bool) {
 }
 
 func (this *ServiceStorage) Remove(code string) {
-	service, _ := this.GetByCode(code)
+	service := mapper.Service{}
 	min.Db.Where("code = ?", code).Delete(service)
 	this.DataToCache()
 }

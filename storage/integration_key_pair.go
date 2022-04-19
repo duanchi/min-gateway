@@ -25,6 +25,8 @@ func (this *IntegrationKeyPairStorage) DataToCache() {
 	var integrationKeyPairs []mapper.IntegrationKeyPair
 	min.Db.Find(&integrationKeyPairs)
 
+	this.CacheService.DelPrefix(this.CACHE_PREFIX)
+
 	for _, integrationKeyPair := range integrationKeyPairs {
 		this.CacheService.Set(this.CACHE_PREFIX, strconv.FormatInt(integrationKeyPair.IntegrationId, 10)+":"+strconv.FormatInt(integrationKeyPair.Id, 10), integrationKeyPair)
 	}

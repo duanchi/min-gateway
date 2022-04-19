@@ -15,5 +15,5 @@ type RouteResponse struct {
 	AuthorizeTypeKey string            `json:"authorize_type_key"`
 	CustomToken      bool              `json:"custom_token"`
 	Rewrite          map[string]string `json:"rewrite"`
-	Order            int               `json:"order"`
+	Order            int64             `json:"order"`
 }

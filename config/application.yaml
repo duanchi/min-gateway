@@ -11,7 +11,7 @@ db:
   dsn: "${DB_DSN}"
 cache:
   enabled: true
-  dsn: "redis://${CACHE_HOST}:${CACHE_PORT}/1"
+  dsn: "${CACHE_DSN:redis://127.0.0.1:6379/1}"
 scheduled:
   enabled: true
 authorization:

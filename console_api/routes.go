@@ -11,24 +11,24 @@ import (
 type RoutesController struct {
 	abstract.RestController
 
-	RoutesService  *service.Route   `autowired:"true"`
+	RouteService   *service.Route   `autowired:"true"`
 	ServiceService *service.Service `autowired:"true"`
 }
 
 func (this *RoutesController) Fetch(id string, resource string, parameters *gin.Params, ctx *gin.Context) (result interface{}, err types.Error) {
-	return this.RoutesService.GetAll(), nil
+	return this.RouteService.GetAll(), nil
 }
 
 func (this *RoutesController) Create(id string, resource string, parameters *gin.Params, ctx *gin.Context) (result interface{}, err types.Error) {
 	var route types2.RouteRequest
 	ctx.ShouldBindJSON(&route)
-	this.RoutesService.Add(route)
+	this.RouteService.Add(route)
 	return true, nil
 }
 
 func (this *RoutesController) Remove(id string, resource string, parameters *gin.Params, ctx *gin.Context) (result interface{}, err types.Error) {
 	id = ctx.Query("id")
-	this.RoutesService.Remove(id)
+	this.RouteService.Remove(id)
 	return true, nil
 }
 
@@ -51,7 +51,7 @@ func (this *RoutesController) Update(id string, resource string, parameters *gin
 				Message: bindErr.Error(),
 			}
 		}
-		// this.Routes.Sort(order)
+		this.RouteService.Sort(order)
 	} else {
 		var route types2.RouteRequest
 		id = ctx.Query("id")
@@ -61,7 +61,7 @@ func (this *RoutesController) Update(id string, resource string, parameters *gin
 				Message: bindErr.Error(),
 			}
 		}
-		this.RoutesService.Modify(id, route)
+		this.RouteService.Modify(id, route)
 	}
 	return true, nil
 }

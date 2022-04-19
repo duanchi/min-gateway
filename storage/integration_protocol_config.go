@@ -30,6 +30,8 @@ func (this *IntegrationProtocolConfigStorage) DataToCache() {
 	var configs []mapper.IntegrationProtocolConfig
 	min.Db.Find(&configs)
 
+	this.CacheService.DelPrefix(this.CACHE_PREFIX)
+
 	for _, config := range configs {
 		this.CacheService.Set(this.CACHE_PREFIX, config.Code, config)
 	}
