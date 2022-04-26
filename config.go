@@ -56,12 +56,14 @@ var Config = struct {
 
 		CacheService cache.CacheService
 
-		RestfulDispatcher                  dispatcher.RestfulDispatcher     `route:"/*url" method:"ALL"`
-		ConsoleApiRoutesController         console_api.RoutesController     `console_api:"routes/"`
-		ConsoleApiServicesController       console_api.ServicesController   `console_api:"services/"`
-		ConsoleApiAuthorizeController      console_api.AuthorizeController  `console_api:"authorize/"`
-		ConsoleApiDatasourceController     console_api.DatasourceController `console_api:"datasource/"`
-		NativeApiAuthorizeStatusController authorize.StatusController       `native_api:"authorize/status"`
+		RestfulDispatcher               dispatcher.RestfulDispatcher      `route:"/*url" method:"ALL"`
+		ConsoleApiRoutesController      console_api.RoutesController      `console_api:"routes/"`
+		ConsoleApiServicesController    console_api.ServicesController    `console_api:"services/"`
+		ConsoleApiAuthorizeController   console_api.AuthorizeController   `console_api:"authorize/"`
+		ConsoleApiIntegrationController console_api.IntegrationController `console_api:"integration/"`
+		ConsoleApiDatasourceController  console_api.DatasourceController  `console_api:"datasource/"`
+
+		NativeApiAuthorizeStatusController authorize.StatusController `native_api:"authorize/status"`
 
 		RouterMiddleware        middleware.RouterMiddleware        `middleware:"true"`
 		AuthorizationMiddleware middleware.AuthorizationMiddleware `middleware:"true"`
