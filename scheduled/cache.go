@@ -4,6 +4,7 @@ import (
 	"github.com/duanchi/min-gateway/cache"
 	"github.com/duanchi/min-gateway/storage"
 	"github.com/duanchi/min/abstract"
+	"github.com/duanchi/min/event"
 )
 
 type CacheSchedule struct {
@@ -28,4 +29,5 @@ func (this *CacheSchedule) Run() {
 	this.IntegrationConfigStorage.DataToCache()
 	this.IntegrationKeyPairStorage.DataToCache()
 	this.IntegrationProtocolConfigStorage.DataToCache()
+	event.CommitCondition("DISCOVERY.SERVICE", "CACHED")
 }

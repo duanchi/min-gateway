@@ -4,6 +4,7 @@ import (
 	"github.com/duanchi/min-gateway/cache"
 	"github.com/duanchi/min-gateway/console_api"
 	"github.com/duanchi/min-gateway/dispatcher"
+	"github.com/duanchi/min-gateway/event"
 	"github.com/duanchi/min-gateway/middleware"
 	"github.com/duanchi/min-gateway/native_api"
 	"github.com/duanchi/min-gateway/native_api/authorize"
@@ -71,7 +72,11 @@ var Config = struct {
 		NativeApiMiddleware     middleware.NativeApiMiddleware     `middleware:"true"`
 		// CustomMiddleware middleware.CustomMiddleware `middleware:"true"`
 
-		CacheSchedule scheduled.CacheSchedule `scheduled:"@start"`
+		CacheSchedule            scheduled.CacheSchedule            `scheduled:"@start"`
+		DiscoveryRefreshSchedule scheduled.DiscoveryRefreshSchedule `scheduled:"@every 30s"`
+
+		DiscoveryEvent        event.DiscoveryEvent        `event:"DISCOVERY.INIT"`
+		DiscoveryServiceEvent event.DiscoveryServiceEvent `event:"DISCOVERY.SERVICE"`
 	}
 }{
 	Config: types.Config{

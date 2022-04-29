@@ -39,13 +39,17 @@ func (this *Service) GetAll() []response.ServiceResponse {
 			for _, instance := range instances {
 				if instance.GrayFlag == 1 {
 					service.Gray = append(service.Gray, response.Instance{
-						Uri: instance.Url,
-						Id:  instance.InstanceId,
+						Uri:         instance.Url,
+						Id:          instance.InstanceId,
+						IsEphemeral: mapper.CONSTANT.BOOLEAN_TYPE[instance.EphemeralFlag],
+						IsOnline:    mapper.CONSTANT.BOOLEAN_TYPE[instance.OnlineFlag],
 					})
 				} else {
 					service.Instances = append(service.Instances, response.Instance{
-						Uri: instance.Url,
-						Id:  instance.InstanceId,
+						Uri:         instance.Url,
+						Id:          instance.InstanceId,
+						IsEphemeral: mapper.CONSTANT.BOOLEAN_TYPE[instance.EphemeralFlag],
+						IsOnline:    mapper.CONSTANT.BOOLEAN_TYPE[instance.OnlineFlag],
 					})
 				}
 
@@ -73,13 +77,12 @@ func (this *Service) Add(service request.Service) {
 				insertInstances = append(insertInstances, mapper.ServiceInstance{
 					InstanceId:    util.GenerateUUID().String(),
 					GrayFlag:      0,
-					OnlineFlag:    0,
-					DynamicFlag:   0,
+					OnlineFlag:    mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsOnline],
 					Weight:        0,
 					Healthy:       0,
 					Url:           instance.Uri,
 					ServiceId:     code,
-					EphemeralFlag: 0,
+					EphemeralFlag: mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsEphemeral],
 					CreateType:    0,
 				})
 			}
@@ -90,13 +93,12 @@ func (this *Service) Add(service request.Service) {
 				insertInstances = append(insertInstances, mapper.ServiceInstance{
 					InstanceId:    instance.Id,
 					GrayFlag:      1,
-					OnlineFlag:    0,
-					DynamicFlag:   0,
+					OnlineFlag:    mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsOnline],
 					Weight:        0,
 					Healthy:       0,
 					Url:           instance.Uri,
 					ServiceId:     code,
-					EphemeralFlag: 0,
+					EphemeralFlag: mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsEphemeral],
 					CreateType:    0,
 				})
 			}
@@ -130,13 +132,12 @@ func (this *Service) Modify(id string, modifiedService request.Service) {
 					insertInstances = append(insertInstances, mapper.ServiceInstance{
 						InstanceId:    instanceId,
 						GrayFlag:      0,
-						OnlineFlag:    1,
-						DynamicFlag:   0,
+						OnlineFlag:    mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsOnline],
 						Weight:        0,
 						Healthy:       0,
 						Url:           instance.Uri,
 						ServiceId:     service.Code,
-						EphemeralFlag: 0,
+						EphemeralFlag: mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsEphemeral],
 						CreateType:    0,
 					})
 				}
@@ -147,13 +148,12 @@ func (this *Service) Modify(id string, modifiedService request.Service) {
 					insertInstances = append(insertInstances, mapper.ServiceInstance{
 						InstanceId:    instance.Id,
 						GrayFlag:      1,
-						OnlineFlag:    1,
-						DynamicFlag:   0,
+						OnlineFlag:    mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsOnline],
 						Weight:        0,
 						Healthy:       0,
 						Url:           instance.Uri,
 						ServiceId:     service.Code,
-						EphemeralFlag: 0,
+						EphemeralFlag: mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsEphemeral],
 						CreateType:    0,
 					})
 				}
