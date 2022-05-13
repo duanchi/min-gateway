@@ -22,7 +22,7 @@ func (this *AuthorizationMiddleware) AfterRoute(ctx *gin.Context) {
 	/**
 	需要进行token验证的
 	*/
-	routeValue, has := ctx.Get("route")
+	routeValue, has := ctx.Get("ROUTE")
 
 	if has {
 		route := routeValue.(mapper.Route)
@@ -41,7 +41,7 @@ func (this *AuthorizationMiddleware) AfterRoute(ctx *gin.Context) {
 				}
 			}
 
-			prefix := "0000"
+			prefix := "AUTH"
 			if len(route.AuthorizePrefix) > 0 && len(route.AuthorizePrefix) < 4 {
 				prefix = fmt.Sprintf("%0*s", 4, route.AuthorizePrefix)
 			} else if len(route.AuthorizePrefix) >= 4 {
@@ -54,9 +54,9 @@ func (this *AuthorizationMiddleware) AfterRoute(ctx *gin.Context) {
 					if err != nil {
 						panic(err)
 					}
-					ctx.Set("user", accessToken)
-					ctx.Set("token", accessToken)
-					ctx.Set("more", more)
+					ctx.Set("USER", accessToken)
+					ctx.Set("TOKEN", accessToken)
+					ctx.Set("MORE", more)
 					ctx.Next()
 					return
 				} else {
@@ -85,9 +85,9 @@ func (this *AuthorizationMiddleware) AfterRoute(ctx *gin.Context) {
 						panic(err)
 					}
 
-					ctx.Set("user", userId)
-					ctx.Set("token", claims.Id)
-					ctx.Set("more", more)
+					ctx.Set("USER", userId)
+					ctx.Set("TOKEN", claims.Id)
+					ctx.Set("MORE", more)
 					ctx.Next()
 					return
 

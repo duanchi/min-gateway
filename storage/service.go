@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"fmt"
 	"github.com/duanchi/min"
 	"github.com/duanchi/min-gateway/cache"
 	"github.com/duanchi/min-gateway/mapper"
@@ -37,7 +36,6 @@ func (this *ServiceStorage) Update(service mapper.Service) (ok bool) {
 		this.DataToCache()
 		return true
 	} else {
-		fmt.Println(err)
 		return false
 	}
 

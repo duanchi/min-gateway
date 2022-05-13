@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"fmt"
+	"github.com/duanchi/min"
 	"github.com/duanchi/min-gateway/mapper"
 	"github.com/duanchi/min-gateway/storage"
 	"github.com/duanchi/min-gateway/util"
@@ -31,7 +31,7 @@ type RouterMiddleware struct {
 
 func (this *RouterMiddleware) AfterRoute(ctx *gin.Context) {
 
-	routes := this.Route.GetAll()
+	routes := this.Route.GetAllSorted()
 	url := ctx.Request.URL
 	method := ctx.Request.Method
 	requestUrl := url.Path
@@ -125,21 +125,23 @@ func (this *RouterMiddleware) AfterRoute(ctx *gin.Context) {
 								ctxUrl = instance.Url + requestUrl
 								ctxRoute = stack
 								grayInstanceId = instance.InstanceId
-								fmt.Println("[" + requestId + "] Force switch to gray service " + instance.InstanceId + " at " + instance.Url + " !!!")
+								min.Log.Debug("[" + requestId + "] Force switch to gray service " + instance.InstanceId + " at " + instance.Url + " !!!")
 								break
 							}
 						}
 					} else {
 						liveInstances := []mapper.ServiceInstance{}
+
 						for _, instance := range instances {
 							if instance.GrayFlag != 1 && instance.OnlineFlag == 1 {
 								liveInstances = append(liveInstances, instance)
 							}
 						}
 
-						if len(liveInstances) > 0 {
+						total := len(liveInstances)
+
+						if total > 0 {
 							n := 0
-							total := len(instances)
 
 							if total > 1 {
 								n = rand.Intn(total)

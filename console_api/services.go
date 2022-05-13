@@ -1,7 +1,6 @@
 package console_api
 
 import (
-	"fmt"
 	"github.com/duanchi/min-gateway/service"
 	"github.com/duanchi/min-gateway/types/request"
 	"github.com/duanchi/min/abstract"
@@ -23,8 +22,7 @@ func (this *ServicesController) Fetch(id string, resource string, parameters *gi
 func (this *ServicesController) Create(id string, resource string, parameters *gin.Params, ctx *gin.Context) (result interface{}, err types.Error) {
 
 	var service request.Service
-	bindErr := ctx.BindJSON(&service)
-	fmt.Println(bindErr)
+	ctx.BindJSON(&service)
 	this.Service.Add(service)
 	return true, nil
 }

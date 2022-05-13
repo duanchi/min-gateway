@@ -44,15 +44,15 @@ func (this *RestfulDispatcher) Handle(path string, method string, params gin.Par
 			gatewayData.Url = url.(string)
 		}*/
 
-		if token, has := ctx.Get("token"); has {
+		if token, has := ctx.Get("TOKEN"); has {
 			gatewayData.Data.Token = token.(string)
 		}
 
-		if user, has := ctx.Get("user"); has {
+		if user, has := ctx.Get("USER"); has {
 			gatewayData.Data.User = user.(string)
 		}
 
-		if more, has := ctx.Get("more"); has {
+		if more, has := ctx.Get("MORE"); has {
 			gatewayData.Data.More = more.(map[string]interface{})
 		}
 

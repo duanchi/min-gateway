@@ -35,6 +35,8 @@ func (this *RouteRewriteStorage) Get(id int64) (rewrite mapper.RouteRewrite) {
 
 func (this *RouteRewriteStorage) GetAllGroupByRouteId() (rewrites map[string][]mapper.RouteRewrite) {
 	allRewrites := []mapper.RouteRewrite{}
+	this.CacheService.GetList(this.CACHE_PREFIX, &allRewrites)
+	rewrites = map[string][]mapper.RouteRewrite{}
 
 	for _, rewrite := range allRewrites {
 		if _, has := rewrites[rewrite.RouteId]; !has {

@@ -1,7 +1,7 @@
 package event
 
 import (
-	"fmt"
+	"github.com/duanchi/min"
 	"github.com/duanchi/min-gateway/service"
 	"github.com/duanchi/min-gateway/types/request"
 	"github.com/duanchi/min/abstract"
@@ -26,7 +26,7 @@ func (this *DiscoveryServiceEvent) Conditions() (conditions []string) {
 }
 
 func (this *DiscoveryServiceEvent) Run(event types.Event, arguments ...interface{}) {
-	fmt.Println("Updating services from discovery...")
+	min.Log.Info("Updating services from discovery...")
 
 	discoveryServices := discovery.GetServiceList()
 	services := this.ServiceService.GetAll()
@@ -93,7 +93,7 @@ func (this *DiscoveryServiceEvent) Run(event types.Event, arguments ...interface
 						Gray:      grayInstances,
 					})
 				} else {
-					fmt.Println("No Service Instance Update!")
+					min.Log.Info("No Service Instance Update!")
 				}
 			}
 		}

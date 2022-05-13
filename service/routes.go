@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"github.com/duanchi/min-gateway/mapper"
 	"github.com/duanchi/min-gateway/storage"
 	"github.com/duanchi/min-gateway/types/request"
@@ -59,7 +58,6 @@ func (this *Route) Add(route request.RouteRequest) {
 
 	route.Id = util2.GenerateUUID().String()
 	sort := this.RouteStorage.GetLastSort()
-	fmt.Println("SORT", sort)
 	route.Order = sort
 
 	this.RouteStorage.Add(mapper.Route{
@@ -110,6 +108,7 @@ func (this *Route) Modify(id string, route request.RouteRequest) {
 		})
 
 		if updated {
+			this.RouteRewriteStorage.RemoveByRouteId(id)
 			if len(route.Rewrite) > 0 {
 				rewrites := []mapper.RouteRewrite{}
 				for pattern, rewrite := range route.Rewrite {
@@ -119,7 +118,6 @@ func (this *Route) Modify(id string, route request.RouteRequest) {
 						Rewrite: rewrite,
 					})
 				}
-				this.RouteRewriteStorage.RemoveByRouteId(id)
 				this.RouteRewriteStorage.AddList(rewrites)
 			}
 		}
