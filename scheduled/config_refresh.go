@@ -1,7 +1,7 @@
 package scheduled
 
 import (
-	"fmt"
+	"github.com/duanchi/min"
 	"github.com/duanchi/min-gateway/service"
 	"github.com/duanchi/min/abstract"
 	"strconv"
@@ -23,7 +23,7 @@ func (this *ConfigRefreshTask) Run() {
 	}
 
 	// log.Log.Info("Configuration auto refresh enabled!")
-	fmt.Println("Configuration auto refresh enabled!, interval every " + strconv.FormatInt(this.Interval, 10) + " second(s)")
+	min.Log.Info("Configuration auto refresh enabled!, interval every " + strconv.FormatInt(this.Interval, 10) + " second(s)")
 
 	ticker := time.NewTicker(time.Duration(this.Interval) * time.Second)
 	defer ticker.Stop()

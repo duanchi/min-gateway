@@ -18,7 +18,7 @@ authorization:
   dsn: "${AUTHORIZATION_DSN:redis://127.0.0.1:6379/0}"
   signature_key: "${AUTHORIZATION_SIGNATURE_KEY:}"
   ttl: ${AUTHORIZATION_TTL:7200}
-  default_singleton: ${AUTHORIZATION_DEFAULT_SIGNLETON:false}
+  default_singleton: ${AUTHORIZATION_DEFAULT_SINGLETON:false}
 gateway:
   data_path: "${GATEWAY_DATA_PATH:./data}"
   console_api:
@@ -30,6 +30,11 @@ gateway:
   config_refresh_interval: ${CONFIG_REFRESH_INTERVAL:30}
   global_request_timeout: ${GLOBAL_REQUEST_TIMEOUT:30}
 discovery:
-  enabled: false
-  url: "nacos://192.168.203.32:8848/nacos/v1"
+  enabled: ${DISCOVERY_ENABLED:false}
+  nodes:
+    - "${DISCOVERY_SERVER:nacos://127.0.0.1:8848/nacos}"
   namespace_id: ""
+  client:
+    enabled: ${DISCOVERY_CLIENT_ENABLED:false}
+    heartbeat_interval: ${DISCOVERY_CLIENT_HEARTBEAT_INTERVAL:20000}
+    instance_id: "${DISCOVERY_CLIENT_INSTANCE_ID:}"

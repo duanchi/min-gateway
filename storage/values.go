@@ -3,7 +3,7 @@ package storage
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"github.com/duanchi/min"
 	"github.com/duanchi/min/abstract"
 	"github.com/duanchi/min/log"
 	"github.com/duanchi/min/util"
@@ -43,7 +43,7 @@ func (this *ValuesService) Instance() *redis.Client {
 		options.PoolSize = 8
 
 		this.instance = redis.NewClient(options)
-		fmt.Printf("Redis %s connected at DB %d!\r\n", options.Addr, options.DB)
+		min.Log.Info("Redis %s connected at DB %d!\r\n", options.Addr, options.DB)
 	}
 	return this.instance
 }

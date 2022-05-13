@@ -23,7 +23,7 @@ func (this *IntegrationConfigStorage) Init() {
 	this.requestTemplate = map[string]*template.Template{}
 }
 
-func (this *IntegrationConfigStorage) Get(uuid string) (integrationConfig mapper.IntegrationConfig, ok bool) {
+func (this *IntegrationConfigStorage) Get(uuid string) (integrationConfig mapper.Integration, ok bool) {
 	ok = this.CacheService.Get(this.CACHE_PREFIX, uuid, &integrationConfig)
 	return
 }
@@ -33,7 +33,7 @@ func (this *IntegrationConfigStorage) Get(uuid string) (integrationConfig mapper
 	return
 }*/
 
-func (this *IntegrationConfigStorage) GetByAlias(alias string) (integrationConfig mapper.IntegrationConfig, ok bool) {
+func (this *IntegrationConfigStorage) GetByAlias(alias string) (integrationConfig mapper.Integration, ok bool) {
 	ok = this.CacheService.Get(this.CACHE_ALIAS_PREFIX, alias, &integrationConfig)
 
 	return
@@ -46,17 +46,17 @@ func (this *IntegrationConfigStorage) GetTemplate(uuid string) (tmpl *template.T
 }
 
 func (this *IntegrationConfigStorage) DataToCache() {
-	var integrationConfigs []mapper.IntegrationConfig
+	var integrationConfigs []mapper.Integration
 	min.Db.Find(&integrationConfigs)
 
 	for _, integrationConfig := range integrationConfigs {
 
-		templateInstance, err := template.New(integrationConfig.Uuid).Parse(integrationConfig.RequestTemplate)
+		templateInstance, err := template.New(integrationConfig.IntegrationId).Parse(integrationConfig.RequestTemplate)
 		if err == nil {
-			this.requestTemplate[integrationConfig.Uuid] = templateInstance
+			this.requestTemplate[integrationConfig.IntegrationId] = templateInstance
 		}
 
-		this.CacheService.Set(this.CACHE_PREFIX, integrationConfig.Uuid, integrationConfig)
+		this.CacheService.Set(this.CACHE_PREFIX, integrationConfig.IntegrationId, integrationConfig)
 
 		if integrationConfig.Alias != "" {
 			this.CacheService.Set(this.CACHE_ALIAS_PREFIX, integrationConfig.Alias, integrationConfig)

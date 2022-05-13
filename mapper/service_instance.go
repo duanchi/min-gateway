@@ -7,7 +7,6 @@ type ServiceInstance struct {
 	InstanceId    string // instance uuid
 	GrayFlag      int
 	OnlineFlag    int
-	DynamicFlag   int
 	Weight        int    // 权重
 	Healthy       int    // 是否健康 1健康, 0 不健康
 	Url           string // 服务URL

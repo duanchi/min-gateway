@@ -5,11 +5,11 @@ import (
 )
 
 type IntegrationKeyPair struct {
-	Id            int64         `json:"id" xorm:"pk"`
-	IntegrationId int64         `json:"integration_id"`
-	Key           string        `json:"key"`
-	Expression    string        `json:"expression"`
-	Position      int `json:"position"`
-	UpdateTime    time.Time  `json:"update_time" xorm:"updated"`
-	CreateTime    time.Time  `json:"create_time" xorm:"created"`
+	Id            int64 ` xorm:"pk"`
+	IntegrationId string
+	Key           string
+	Expression    string
+	Position      int
+	UpdateTime    time.Time `xorm:"updated"`
+	CreateTime    time.Time `xorm:"created"`
 }

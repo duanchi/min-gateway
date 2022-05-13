@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/duanchi/min"
 	"github.com/duanchi/min-gateway/mapper"
 	"github.com/duanchi/min-gateway/service/storage"
 	"github.com/duanchi/min/abstract"
@@ -69,7 +70,7 @@ func (this *AuthorizationService) Handle(
 	moreData := map[string]interface{}{}
 	json.Unmarshal([]byte(moreDataRaw), &moreData)
 
-	if routeValue, has := ctx.Get("route"); has {
+	if routeValue, has := ctx.Get("ROUTE"); has {
 
 		route := routeValue.(mapper.Route)
 
@@ -82,7 +83,6 @@ func (this *AuthorizationService) Handle(
 
 		switch action {
 		case "CREATE":
-
 			if mapper.CONSTANT.IS_CUSTOM_TOKEN[route.CustomToken] {
 
 				if expiresIn == 0 {
@@ -105,7 +105,6 @@ func (this *AuthorizationService) Handle(
 					"expiresAt": expireAt,
 				}
 			} else {
-
 				accessToken, expireAt, refreshToken, refreshExpireAt, tokenErr := this.TokenService.Generate(data, prefix+":", singleton, authorizeType, moreData)
 
 				if tokenErr != nil {
@@ -183,7 +182,7 @@ func (this *AuthorizationService) Handle(
 					prefix = removePrefix
 				}
 				for _, token := range strings.Split(multi, ",") {
-					fmt.Println("[REMOVE TOKEN] " + prefix + ":" + token)
+					min.Log.Debug("[REMOVE TOKEN] " + prefix + ":" + token)
 					this.TokenService.Delete(token, prefix+":")
 				}
 			} else {

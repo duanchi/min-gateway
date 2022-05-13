@@ -9,18 +9,18 @@ import (
 	"github.com/duanchi/min/util"
 )
 
-type Service struct {
+type Integration struct {
 	abstract.Bean
 
-	StorageKey             string                          `value:"GATEWAY:SERVICES"`
+	StorageKey             string                          `value:"GATEWAY:INTEGRATION"`
 	KEY                    string                          `value:"services"`
 	ServiceStorage         *storage.ServiceStorage         `bean:"autowired"`
 	ServiceInstanceStorage *storage.ServiceInstanceStorage `bean:"autowired"`
 }
 
-func (this *Service) Init() {}
+func (this *Integration) Init() {}
 
-func (this *Service) GetAll() []response.ServiceResponse {
+func (this *Integration) GetAll() []response.ServiceResponse {
 	rawArray, _ := this.ServiceStorage.GetAll()
 	serviceArray := []response.ServiceResponse{}
 	instanceMap := this.ServiceInstanceStorage.GetAllGroupByServiceId()
@@ -39,17 +39,13 @@ func (this *Service) GetAll() []response.ServiceResponse {
 			for _, instance := range instances {
 				if instance.GrayFlag == 1 {
 					service.Gray = append(service.Gray, response.Instance{
-						Uri:         instance.Url,
-						Id:          instance.InstanceId,
-						IsEphemeral: mapper.CONSTANT.BOOLEAN_TYPE[instance.EphemeralFlag],
-						IsOnline:    mapper.CONSTANT.BOOLEAN_TYPE[instance.OnlineFlag],
+						Uri: instance.Url,
+						Id:  instance.InstanceId,
 					})
 				} else {
 					service.Instances = append(service.Instances, response.Instance{
-						Uri:         instance.Url,
-						Id:          instance.InstanceId,
-						IsEphemeral: mapper.CONSTANT.BOOLEAN_TYPE[instance.EphemeralFlag],
-						IsOnline:    mapper.CONSTANT.BOOLEAN_TYPE[instance.OnlineFlag],
+						Uri: instance.Url,
+						Id:  instance.InstanceId,
 					})
 				}
 
@@ -62,7 +58,7 @@ func (this *Service) GetAll() []response.ServiceResponse {
 	return serviceArray
 }
 
-func (this *Service) Add(service request.Service) {
+func (this *Integration) Add(service request.Service) {
 	code := util.GenerateUUID().String()
 	ok := this.ServiceStorage.Add(mapper.Service{
 		Code: code,
@@ -77,12 +73,12 @@ func (this *Service) Add(service request.Service) {
 				insertInstances = append(insertInstances, mapper.ServiceInstance{
 					InstanceId:    util.GenerateUUID().String(),
 					GrayFlag:      0,
-					OnlineFlag:    mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsOnline],
+					OnlineFlag:    0,
 					Weight:        0,
 					Healthy:       0,
 					Url:           instance.Uri,
 					ServiceId:     code,
-					EphemeralFlag: mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsEphemeral],
+					EphemeralFlag: 0,
 					CreateType:    0,
 				})
 			}
@@ -93,12 +89,12 @@ func (this *Service) Add(service request.Service) {
 				insertInstances = append(insertInstances, mapper.ServiceInstance{
 					InstanceId:    instance.Id,
 					GrayFlag:      1,
-					OnlineFlag:    mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsOnline],
+					OnlineFlag:    0,
 					Weight:        0,
 					Healthy:       0,
 					Url:           instance.Uri,
 					ServiceId:     code,
-					EphemeralFlag: mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsEphemeral],
+					EphemeralFlag: 0,
 					CreateType:    0,
 				})
 			}
@@ -110,7 +106,7 @@ func (this *Service) Add(service request.Service) {
 	}
 }
 
-func (this *Service) Modify(id string, modifiedService request.Service) {
+func (this *Integration) Modify(id string, modifiedService request.Service) {
 	service, ok := this.ServiceStorage.GetFromDB(id)
 
 	if ok {
@@ -132,12 +128,12 @@ func (this *Service) Modify(id string, modifiedService request.Service) {
 					insertInstances = append(insertInstances, mapper.ServiceInstance{
 						InstanceId:    instanceId,
 						GrayFlag:      0,
-						OnlineFlag:    mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsOnline],
+						OnlineFlag:    1,
 						Weight:        0,
 						Healthy:       0,
 						Url:           instance.Uri,
 						ServiceId:     service.Code,
-						EphemeralFlag: mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsEphemeral],
+						EphemeralFlag: 0,
 						CreateType:    0,
 					})
 				}
@@ -148,12 +144,12 @@ func (this *Service) Modify(id string, modifiedService request.Service) {
 					insertInstances = append(insertInstances, mapper.ServiceInstance{
 						InstanceId:    instance.Id,
 						GrayFlag:      1,
-						OnlineFlag:    mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsOnline],
+						OnlineFlag:    1,
 						Weight:        0,
 						Healthy:       0,
 						Url:           instance.Uri,
 						ServiceId:     service.Code,
-						EphemeralFlag: mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsEphemeral],
+						EphemeralFlag: 0,
 						CreateType:    0,
 					})
 				}
@@ -167,7 +163,7 @@ func (this *Service) Modify(id string, modifiedService request.Service) {
 
 }
 
-func (this *Service) Remove(id string) {
+func (this *Integration) Remove(id string) {
 	this.ServiceStorage.Remove(id)
 	this.ServiceInstanceStorage.RemoveByServiceId(id)
 }

@@ -3,8 +3,10 @@ package request
 type ServiceRequest map[string]Service
 
 type Instance struct {
-	Uri string `json:"uri"`
-	Id  string `json:"id"`
+	Uri         string `json:"uri"`
+	Id          string `json:"id"`
+	IsEphemeral bool   `json:"is_ephemeral"`
+	IsOnline    bool   `json:"is_online"`
 }
 
 type Service struct {
