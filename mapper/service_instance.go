@@ -12,6 +12,7 @@ type ServiceInstance struct {
 	Url           string // 服务URL
 	ServiceId     string
 	EphemeralFlag int       // 是否临时实例
+	StaticFlag    int       // 是否内置实例
 	CreateTime    time.Time `xorm:"created"`
 	UpdateTime    time.Time `xorm:"updated"`
 	CreateType    int

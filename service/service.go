@@ -43,6 +43,7 @@ func (this *Service) GetAll() []response.ServiceResponse {
 						Id:          instance.InstanceId,
 						IsEphemeral: mapper.CONSTANT.BOOLEAN_TYPE[instance.EphemeralFlag],
 						IsOnline:    mapper.CONSTANT.BOOLEAN_TYPE[instance.OnlineFlag],
+						IsStatic:    mapper.CONSTANT.BOOLEAN_TYPE[instance.StaticFlag],
 					})
 				} else {
 					service.Instances = append(service.Instances, response.Instance{
@@ -50,6 +51,7 @@ func (this *Service) GetAll() []response.ServiceResponse {
 						Id:          instance.InstanceId,
 						IsEphemeral: mapper.CONSTANT.BOOLEAN_TYPE[instance.EphemeralFlag],
 						IsOnline:    mapper.CONSTANT.BOOLEAN_TYPE[instance.OnlineFlag],
+						IsStatic:    mapper.CONSTANT.BOOLEAN_TYPE[instance.StaticFlag],
 					})
 				}
 
@@ -80,6 +82,7 @@ func (this *Service) Add(service request.Service) {
 					OnlineFlag:    mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsOnline],
 					Weight:        0,
 					Healthy:       0,
+					StaticFlag:    mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsStatic],
 					Url:           instance.Uri,
 					ServiceId:     code,
 					EphemeralFlag: mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsEphemeral],
@@ -96,6 +99,7 @@ func (this *Service) Add(service request.Service) {
 					OnlineFlag:    mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsOnline],
 					Weight:        0,
 					Healthy:       0,
+					StaticFlag:    mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsStatic],
 					Url:           instance.Uri,
 					ServiceId:     code,
 					EphemeralFlag: mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsEphemeral],
@@ -135,6 +139,7 @@ func (this *Service) Modify(id string, modifiedService request.Service) {
 						OnlineFlag:    mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsOnline],
 						Weight:        0,
 						Healthy:       0,
+						StaticFlag:    mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsStatic],
 						Url:           instance.Uri,
 						ServiceId:     service.Code,
 						EphemeralFlag: mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsEphemeral],
@@ -151,6 +156,7 @@ func (this *Service) Modify(id string, modifiedService request.Service) {
 						OnlineFlag:    mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsOnline],
 						Weight:        0,
 						Healthy:       0,
+						StaticFlag:    mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsStatic],
 						Url:           instance.Uri,
 						ServiceId:     service.Code,
 						EphemeralFlag: mapper.CONSTANT.BOOLEAN_TYPE_REVERSE[instance.IsEphemeral],

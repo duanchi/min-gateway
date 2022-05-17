@@ -7,6 +7,7 @@ type Instance struct {
 	Id          string `json:"id"`
 	IsEphemeral bool   `json:"is_ephemeral"`
 	IsOnline    bool   `json:"is_online"`
+	IsStatic    bool   `json:"is_static"`
 }
 
 type Service struct {

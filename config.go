@@ -1,18 +1,7 @@
 package main
 
 import (
-	"github.com/duanchi/min-gateway/cache"
-	"github.com/duanchi/min-gateway/console_api"
-	"github.com/duanchi/min-gateway/dispatcher"
-	"github.com/duanchi/min-gateway/event"
-	"github.com/duanchi/min-gateway/middleware"
-	"github.com/duanchi/min-gateway/native_api"
-	"github.com/duanchi/min-gateway/native_api/authorize"
-	"github.com/duanchi/min-gateway/scheduled"
-	"github.com/duanchi/min-gateway/service"
-	storage2 "github.com/duanchi/min-gateway/service/storage"
-	"github.com/duanchi/min-gateway/storage"
-	_interface "github.com/duanchi/min/interface"
+	"github.com/duanchi/min-gateway/bean"
 	"github.com/duanchi/min/types"
 )
 
@@ -39,50 +28,9 @@ var Config = struct {
 		DefaultSingleton bool   `yaml:"default_singleton"`
 	} `yaml:"authorization"`
 
-	Beans struct {
-		AuthorizationService service.AuthorizationService
-		TokenService         service.TokenService
-		RouteService         service.Route
-		ServiceService       service.Service
-
-		ValuesService storage2.ValuesService
-
-		ServiceInstanceStorage           storage.ServiceInstanceStorage
-		ServiceStorage                   storage.ServiceStorage
-		RouteStorage                     storage.RouteStorage
-		RouteRewriteStorage              storage.RouteRewriteStorage
-		IntegrationConfigStorage         storage.IntegrationConfigStorage
-		IntegrationKeyPairStorage        storage.IntegrationKeyPairStorage
-		IntegrationProtocolConfigStorage storage.IntegrationProtocolConfigStorage
-
-		CacheService cache.CacheService
-
-		RestfulDispatcher               dispatcher.RestfulDispatcher      `route:"/*url" method:"ALL"`
-		ConsoleApiRoutesController      console_api.RoutesController      `console_api:"routes/"`
-		ConsoleApiServicesController    console_api.ServicesController    `console_api:"services/"`
-		ConsoleApiAuthorizeController   console_api.AuthorizeController   `console_api:"authorize/"`
-		ConsoleApiIntegrationController console_api.IntegrationController `console_api:"integration/"`
-		ConsoleApiDatasourceController  console_api.DatasourceController  `console_api:"datasource/"`
-
-		NativeApiAuthorizeStatusController authorize.StatusController `native_api:"authorize/status"`
-
-		RouterMiddleware        middleware.RouterMiddleware        `middleware:"true"`
-		AuthorizationMiddleware middleware.AuthorizationMiddleware `middleware:"true"`
-		ConsoleApiMiddleware    middleware.ConsoleApiMiddleware    `middleware:"true"`
-		NativeApiMiddleware     middleware.NativeApiMiddleware     `middleware:"true"`
-		// CustomMiddleware middleware.CustomMiddleware `middleware:"true"`
-
-		CacheSchedule            scheduled.CacheSchedule            `scheduled:"@start"`
-		DiscoveryRefreshSchedule scheduled.DiscoveryRefreshSchedule `scheduled:"@every 30s"`
-
-		DiscoveryEvent        event.DiscoveryEvent        `event:"DISCOVERY.INIT"`
-		DiscoveryServiceEvent event.DiscoveryServiceEvent `event:"DISCOVERY.SERVICE"`
-	}
+	Beans bean.Beans
 }{
 	Config: types.Config{
-		BeanParsers: []_interface.BeanParserInterface{
-			&console_api.ConsoleApiBeanParser{},
-			&native_api.NativeApiBeanParser{},
-		},
+		BeanParsers: bean.BeanParsers,
 	},
 }
