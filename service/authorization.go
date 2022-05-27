@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/duanchi/min"
 	"github.com/duanchi/min-gateway/mapper"
-	"github.com/duanchi/min-gateway/service/storage"
+	"github.com/duanchi/min-gateway/storage"
 	"github.com/duanchi/min/abstract"
 	"github.com/duanchi/min/types"
 	"github.com/duanchi/min/types/gateway"

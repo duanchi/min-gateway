@@ -29,6 +29,8 @@ gateway:
   enable_gray_instance: ${GATEWAY_ENABLE_GRAY_INSTANCE:true}
   config_refresh_interval: ${CONFIG_REFRESH_INTERVAL:30}
   global_request_timeout: ${GLOBAL_REQUEST_TIMEOUT:30}
+  log:
+    concurrent_lines: 100
 discovery:
   enabled: ${DISCOVERY_ENABLED:false}
   nodes:

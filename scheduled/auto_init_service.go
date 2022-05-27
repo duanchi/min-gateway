@@ -1,7 +1,6 @@
 package scheduled
 
 import (
-	"fmt"
 	"github.com/duanchi/min-gateway/service"
 	"github.com/duanchi/min-gateway/types/request"
 	"github.com/duanchi/min/abstract"
@@ -32,7 +31,6 @@ func (this *AutoInitServiceSchedule) Run() {
 				staticInstance := []request.Instance{}
 
 				for _, instance := range oneService.Instances {
-					fmt.Println("INSTANCE:", instance)
 					if !instance.IsStatic {
 						staticInstance = append(staticInstance, request.Instance{
 							Uri:         instance.Uri,

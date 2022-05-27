@@ -19,6 +19,9 @@ var Config = struct {
 		} `yaml:"native_api"`
 		EnableGrayInstance   bool  `yaml:"enable_gray_instance" default:"${ENABLE_GRAY_INSTANCE:true}"`
 		GlobalRequestTimeout int64 `yaml:"global_request_timeout" default:"${GLOBAL_REQUEST_TIMEOUT:30}"`
+		Log                  struct {
+			ConcurrentLines int64 `yaml:"max_record_lines" default:"${LOG_CONCURRENT_LINES:7200}"`
+		} `yaml:"log"`
 	} `yaml:"gateway"`
 
 	Authorization struct {
