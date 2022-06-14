@@ -118,7 +118,17 @@ func (this *RestfulDispatcher) Handle(path string, method string, params gin.Par
 		} else {
 			contentType = responseHeaders.Get("Content-Type")
 
-			if _, has := arrays.ContainsString([]string{"CREATE", "REFRESH", "REMOVE"}, strings.ToUpper(responseHeaders.Get("X-Gateway-Authorization-Action"))); route.NeedAuthorize == 1 && has {
+			headerAction := strings.ToUpper(responseHeaders.Get("X-Gateway-Authorization-Action"))
+			isCreateProcess := false
+			isRefreshOrRemoveProcess := false
+
+			if headerAction == "CREATE" {
+				isCreateProcess = true
+			} else if _, has := arrays.ContainsString([]string{"REFRESH", "REMOVE"}, headerAction); has && route.NeedAuthorize == 1 {
+				isRefreshOrRemoveProcess = true
+			}
+
+			if isCreateProcess || isRefreshOrRemoveProcess {
 				//进入授权流程
 				singleton := this.DefaultSingleton
 				if !this.DefaultSingleton && responseHeaders.Get("X-Gateway-Authorization-Singleton") == "true" {
