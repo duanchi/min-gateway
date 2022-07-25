@@ -1,6 +1,6 @@
 .PHONY: all build run dev install clean docker-build docker-push
 
-VERSION="2.0.4"
+VERSION="2.0.5"
 BIN_FILE = "min-gateway"
 
 all: install build
@@ -12,7 +12,7 @@ run: build
 	@./bin/${BIN_FILE}
 
 dev:
-	@fresh
+	@air
 
 build:
 	@CGO_ENABLED=0 GOOS=linux go build -a -o ./bin/${BIN_FILE}
