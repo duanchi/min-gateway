@@ -18,7 +18,7 @@ build:
 	@CGO_ENABLED=0 GOOS=linux go build -a -o ./bin/${BIN_FILE}
 
 clean:
-	@if [ -f ${BINARY} ] ; then rm ${BINARY} ; fi
+	@if [ -f ./bin/${BIN_FILE} ] ; then rm ./bin/${BIN_FILE} ; fi
 
 docker-build: build
 	@docker build -t docker.in-mes.com/min/min-gateway:${VERSION} -f ./docker/Dockerfile .

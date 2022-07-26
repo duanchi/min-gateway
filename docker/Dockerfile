@@ -1,13 +1,13 @@
-#FROM docker.in-mes.io/library/golang as builder
-#WORKDIR /go/src/github.com/duanchi/min-gateway/
-#COPY . /go/src/github.com/duanchi/min-gateway
-#RUN CGO_ENABLED=0 GOOS=linux go build -a -o /min-gateway
+FROM docker.in-mes.io/library/golang as builder
+WORKDIR /go/src/github.com/duanchi/min-gateway/
+COPY . /go/src/github.com/duanchi/min-gateway
+RUN CGO_ENABLED=0 GOOS=linux go build -a -o /min-gateway
 
 
 FROM alpine:latest
 WORKDIR /min
-#COPY --from=builder /min-gateway /min/gateway
-COPY ./bin/min-gateway /min/gateway
+COPY --from=builder /min-gateway /min/gateway
+#COPY ./bin/min-gateway /min/gateway
 COPY config/application.yaml /min/config/application.yaml
 COPY ./docker/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh && chmod +x /min/gateway
