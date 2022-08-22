@@ -1,8 +1,10 @@
 env: "${ENV:development}"
 #服务配置
 application:
-  server_port: "${SERVER_PORT:9080}"
   name: "min-gateway"
+http-server:
+  enabled: true
+  server-port: "${SERVER_PORT:9080}"
 log:
   enabled: true
   level: "${LOG_LEVEL:debug}"

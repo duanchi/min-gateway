@@ -5,6 +5,11 @@ type RouteUrl struct {
 	Match string `json:"match"`
 }
 
+type RouteBlueTag struct {
+	Tag       string `json:"tag"`
+	ServiceId string `json:"service_id"`
+}
+
 type RouteResponse struct {
 	Id               string            `json:"id"`
 	Url              RouteUrl          `json:"url"`
@@ -15,5 +20,9 @@ type RouteResponse struct {
 	AuthorizeTypeKey string            `json:"authorize_type_key"`
 	CustomToken      bool              `json:"custom_token"`
 	Rewrite          map[string]string `json:"rewrite"`
+	BlueTagKey       string            `json:"blue_tag_key"`
+	Blue             []RouteBlueTag    `json:"blue"`
+	Description      string            `json:"description"`
+	Timeout          int64             `json:"timeout"`
 	Order            int64             `json:"order"`
 }

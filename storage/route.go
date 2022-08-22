@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"github.com/duanchi/min"
 	cache2 "github.com/duanchi/min-gateway/cache"
 	"github.com/duanchi/min-gateway/mapper"
@@ -87,7 +88,7 @@ func (this *RouteStorage) Add(route mapper.Route) (id string, ok bool) {
 
 func (this *RouteStorage) Remove(id string) {
 	route := mapper.Route{}
-	min.Db.Where("route_id = ?", route.RouteId).Delete(route)
+	min.Db.Where("route_id = ?", id).Delete(route)
 	this.DataToCache()
 }
 
@@ -101,7 +102,9 @@ func (this *RouteStorage) Sort(sorts []string) {
 
 func (this *RouteStorage) DataToCache() {
 	var routes []mapper.Route
-	min.Db.Find(&routes)
+	fmt.Println(min.Db.Find(&routes))
+
+	fmt.Println("ROUETS: ", routes)
 
 	this.CacheService.DelPrefix(this.CACHE_PREFIX)
 

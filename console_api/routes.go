@@ -15,7 +15,7 @@ type RoutesController struct {
 	ServiceService *service.Service `autowired:"true"`
 }
 
-func (this *RoutesController) Fetch(id string, resource string, parameters *gin.Params, ctx *gin.Context) (result interface{}, err types.Error) {
+func (this *RoutesController) FetchList(id string, resource string, parameters *gin.Params, ctx *gin.Context) (result interface{}, err types.Error) {
 	return this.RouteService.GetAll(), nil
 }
 

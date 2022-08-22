@@ -14,6 +14,8 @@ type Route struct {
 	AuthorizeTypeKey string // 区分单例登录的Key
 	CustomToken      int    // 是否自定义授权token
 	Description      string
+	BlueTagKey       string
+	HasBlue          bool
 	Sort             int64
 	CreateTime       time.Time `xorm:"created"`
 	UpdateTime       time.Time `xorm:"updated"`

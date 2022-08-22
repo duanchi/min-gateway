@@ -24,6 +24,7 @@ type Beans struct {
 	ServiceStorage                   storage.ServiceStorage
 	RouteStorage                     storage.RouteStorage
 	RouteRewriteStorage              storage.RouteRewriteStorage
+	RouteBlueTagStorage              storage.RouteBlueTagStorage
 	IntegrationConfigStorage         storage.IntegrationConfigStorage
 	IntegrationKeyPairStorage        storage.IntegrationKeyPairStorage
 	IntegrationProtocolConfigStorage storage.IntegrationProtocolConfigStorage
@@ -39,10 +40,10 @@ type Beans struct {
 
 	NativeApiAuthorizeStatusController authorize.StatusController `native_api:"authorize/status"`
 
-	RouterMiddleware        middleware.RouterMiddleware        `middleware:"true"`
-	AuthorizationMiddleware middleware.AuthorizationMiddleware `middleware:"true"`
-	ConsoleApiMiddleware    middleware.ConsoleApiMiddleware    `middleware:"true"`
-	NativeApiMiddleware     middleware.NativeApiMiddleware     `middleware:"true"`
+	RouterMiddleware        middleware.RouterMiddleware        `bean:"middleware"`
+	AuthorizationMiddleware middleware.AuthorizationMiddleware `bean:"middleware"`
+	ConsoleApiMiddleware    middleware.ConsoleApiMiddleware    `bean:"middleware"`
+	NativeApiMiddleware     middleware.NativeApiMiddleware     `bean:"middleware"`
 	// CustomMiddleware middleware.CustomMiddleware `middleware:"true"`
 
 	CacheSchedule            scheduled.CacheSchedule            `scheduled:"@start"`

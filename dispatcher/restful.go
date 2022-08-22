@@ -6,12 +6,15 @@ import (
 	"encoding/json"
 	"github.com/duanchi/min-gateway/mapper"
 	"github.com/duanchi/min-gateway/service"
+	"github.com/duanchi/min-gateway/storage"
+	"github.com/duanchi/min-gateway/util"
 	"github.com/duanchi/min/abstract"
 	"github.com/duanchi/min/types"
 	"github.com/duanchi/min/types/gateway"
 	"github.com/duanchi/min/util/arrays"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -26,6 +29,9 @@ type RestfulDispatcher struct {
 
 	DefaultSingleton     bool  `value:"${Authorization.DefaultSingleton}"`
 	GlobalRequestTimeout int64 `value:"${Gateway.GlobalRequestTimeout}"`
+
+	RouteBlueTagStorage *storage.RouteBlueTagStorage    `bean:"autowired"`
+	ServiceInstance     *storage.ServiceInstanceStorage `bean:"autowired"`
 }
 
 func (this *RestfulDispatcher) Handle(path string, method string, params gin.Params, ctx *gin.Context) {
@@ -54,6 +60,68 @@ func (this *RestfulDispatcher) Handle(path string, method string, params gin.Par
 
 		if more, has := ctx.Get("MORE"); has {
 			gatewayData.Data.More = more.(map[string]interface{})
+		}
+
+		// 蓝绿发布
+		// 在获取了蓝绿配置之后重新获取service实例，重新走一遍实例负载均衡
+		if route.HasBlue {
+			if route.BlueTagKey != "" {
+				tagValue := ""
+				if tags := this.RouteBlueTagStorage.GetByRouteId(route.RouteId); len(tags) > 0 {
+					keyStack := strings.Split(route.BlueTagKey, ".")
+
+					if keyStack[0] == "more" {
+						if value, has := gatewayData.Data.More[keyStack[1]]; has {
+							tagValue = value.(string)
+						}
+					} else if keyStack[0] == "user" {
+						tagValue = gatewayData.Data.User
+					} else if keyStack[0] == "token" {
+						tagValue = gatewayData.Data.Token
+					}
+
+					if tagValue != "" {
+						for _, tag := range tags {
+							if tag.Tag == tagValue {
+								instances := this.ServiceInstance.GetByServiceId(tag.ServiceId)
+
+								liveInstances := []mapper.ServiceInstance{}
+
+								for _, instance := range instances {
+									if instance.GrayFlag != 1 && instance.OnlineFlag == 1 {
+										liveInstances = append(liveInstances, instance)
+									}
+								}
+
+								total := len(liveInstances)
+
+								if total > 0 {
+									n := 0
+
+									if total > 1 {
+										n = rand.Intn(total)
+									}
+
+									rawUrl := ctx.Request.URL
+									requestUrl := rawUrl.Path
+
+									url = liveInstances[n].Url + requestUrl
+								} else {
+									ctx.AbortWithStatusJSON(404,
+										types.Response{
+											RequestId: util.CtxGet("REQUEST_ID", ctx).(string),
+											Code:      100404,
+											Message:   "No instance provided on service",
+											Data:      nil,
+										})
+									return
+								}
+							}
+							break
+						}
+					}
+				}
+			}
 		}
 
 		if method == "GET" {

@@ -14,8 +14,7 @@ type ServicesController struct {
 	Service *service.Service `bean:"autowired"`
 }
 
-func (this *ServicesController) Fetch(id string, resource string, parameters *gin.Params, ctx *gin.Context) (result interface{}, err types.Error) {
-
+func (this *ServicesController) FetchList(id string, resource string, parameters *gin.Params, ctx *gin.Context) (result interface{}, err types.Error) {
 	return this.Service.GetAll(), nil
 }
 

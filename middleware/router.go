@@ -100,6 +100,7 @@ func (this *RouterMiddleware) AfterRoute(ctx *gin.Context) {
 				if methodMatch && urlMatch {
 
 					// service, _ := this.Service.Get(stack.ServiceId)
+
 					instances := this.ServiceInstance.GetByServiceId(stack.ServiceId)
 					rewrites := this.RouteRewrite.GetByRouteId(stack.RouteId)
 

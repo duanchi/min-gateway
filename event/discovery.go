@@ -10,6 +10,6 @@ type DiscoveryEvent struct {
 	abstract.Event
 }
 
-func (this *DiscoveryEvent) Run(event types.Event, arguments ...interface{}) {
+func (this *DiscoveryEvent) Emit(event types.Event, arguments ...interface{}) {
 	event2.CommitCondition("DISCOVERY.SERVICE", "DISCOVERED")
 }

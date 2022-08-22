@@ -1,7 +1,9 @@
 package native_api
 
-import "reflect"
+import (
+	"github.com/duanchi/min/server/types"
+)
 
-type NativeApiBeanMap map[string]reflect.Value
+type NativeApiBeanMap map[string]types.RestfulRoute
 
 var NativeApiBeans = NativeApiBeanMap{}

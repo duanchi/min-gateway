@@ -13,6 +13,7 @@ type CacheSchedule struct {
 	ServiceStorage                   *storage.ServiceStorage                   `bean:"autowired"`
 	RouteStorage                     *storage.RouteStorage                     `bean:"autowired"`
 	RouteRewriteStorage              *storage.RouteRewriteStorage              `bean:"autowired"`
+	RouteBlueTagStorage              *storage.RouteBlueTagStorage              `bean:"autowired"`
 	IntegrationConfigStorage         *storage.IntegrationConfigStorage         `bean:"autowired"`
 	IntegrationKeyPairStorage        *storage.IntegrationKeyPairStorage        `bean:"autowired"`
 	IntegrationProtocolConfigStorage *storage.IntegrationProtocolConfigStorage `bean:"autowired"`
@@ -26,6 +27,7 @@ func (this *CacheSchedule) Run() {
 	this.ServiceInstanceStorage.DataToCache()
 	this.RouteStorage.DataToCache()
 	this.RouteRewriteStorage.DataToCache()
+	this.RouteBlueTagStorage.DataToCache()
 	this.IntegrationConfigStorage.DataToCache()
 	this.IntegrationKeyPairStorage.DataToCache()
 	this.IntegrationProtocolConfigStorage.DataToCache()

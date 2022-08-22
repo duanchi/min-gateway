@@ -8,6 +8,7 @@ import (
 	"github.com/duanchi/min/microservice/discovery"
 	"github.com/duanchi/min/types"
 	"strconv"
+	"strings"
 )
 
 type DiscoveryServiceEvent struct {
@@ -25,7 +26,7 @@ func (this *DiscoveryServiceEvent) Conditions() (conditions []string) {
 	return
 }
 
-func (this *DiscoveryServiceEvent) Run(event types.Event, arguments ...interface{}) {
+func (this *DiscoveryServiceEvent) Emit(event types.Event, arguments ...interface{}) {
 	min.Log.Info("Updating services from discovery...")
 
 	discoveryServices := discovery.GetServiceList()
@@ -33,6 +34,21 @@ func (this *DiscoveryServiceEvent) Run(event types.Event, arguments ...interface
 
 	if len(services) > 0 && len(discoveryServices) > 0 {
 		for _, service := range services {
+			serviceName := ""
+			serviceGroup := "DEFAULT_GROUP"
+			serviceCluster := "DEFAULT"
+			if stack := strings.SplitN(service.Name, "@@", 2); len(stack) == 2 {
+				serviceName = stack[1]
+				if extra := strings.SplitN(stack[0], "#", 2); len(extra) == 2 {
+					serviceCluster = extra[0]
+					serviceGroup = extra[1]
+				} else {
+					serviceGroup = extra[0]
+				}
+			} else {
+				serviceName = stack[0]
+			}
+
 			serviceInstances := []request.Instance{}
 			grayInstances := []request.Instance{}
 			existInstances := map[string]string{}
@@ -61,7 +77,7 @@ func (this *DiscoveryServiceEvent) Run(event types.Event, arguments ...interface
 				}
 			}
 
-			if discoveryService, ok := discoveryServices[service.Name]; ok {
+			if discoveryService, ok := discoveryServices[serviceCluster+"#"+serviceGroup+"@@"+serviceName]; ok {
 				discoveryTotal := len(discoveryService.Instances)
 				matchCount := 0
 
