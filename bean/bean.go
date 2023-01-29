@@ -5,6 +5,7 @@ import (
 	"github.com/duanchi/min-gateway/console_api"
 	"github.com/duanchi/min-gateway/dispatcher"
 	"github.com/duanchi/min-gateway/event"
+	"github.com/duanchi/min-gateway/log"
 	"github.com/duanchi/min-gateway/middleware"
 	"github.com/duanchi/min-gateway/native_api/authorize"
 	"github.com/duanchi/min-gateway/scheduled"
@@ -30,6 +31,7 @@ type Beans struct {
 	IntegrationProtocolConfigStorage storage.IntegrationProtocolConfigStorage
 
 	CacheService cache.CacheService
+	LogService   log.LogService
 
 	RestfulDispatcher               dispatcher.RestfulDispatcher      `route:"/*url" method:"ALL"`
 	ConsoleApiRoutesController      console_api.RoutesController      `console_api:"routes/"`
